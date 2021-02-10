@@ -1,0 +1,5 @@
+# Skydot Plugin 
+
+> GDScript version.
+
+
