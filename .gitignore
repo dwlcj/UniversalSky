@@ -3,6 +3,8 @@
 .import/
 export.cfg
 export_presets.cfg
+/addons/jc.godot.plane-editor-theme/
+/addons/zylann.hterrain/
 
 # Mono-specific ignores
 .mono/
