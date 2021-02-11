@@ -88,8 +88,8 @@ vec3 tonemapACES(vec3 color, float exposure, float level){
 	return mix(color.rgb, ret, level);
 }
 
-float beerLaw(float d, float factor){
-	return exp(-d * factor);
+float fogExp(float depth, float density){
+	return 1.0 - saturate(exp2(-depth * density));
 }
 
 float rayleighPhase(float mu){
@@ -165,7 +165,7 @@ void fragment(){
 	ray = (camera * vec4(ray.xyz, 0.0)).xyz;
 
 	float linearDepth = -view.z;
-	float fogFactor = 1.0 - beerLaw(linearDepth, _density);
+	float fogFactor = fogExp(linearDepth, _density);
 	
 	vec2 mu = vec2(dot(_sun_direction, ray), dot(_moon_direction, ray));
 	float sr; float sm; opticalDepth(ray.y + _atm_params.z, sr, sm);

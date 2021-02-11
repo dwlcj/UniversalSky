@@ -17,6 +17,8 @@ tool extends Node
 """
 10. Add TOD.
 11. Add clouds.
+12. Añadir funcion exponencial a la niebla.
+13. Optimizar y probar rendimiento.
 """
 
 #-------------------
@@ -291,19 +293,6 @@ func set_moon_light_energy(value: float) -> void:
 	moon_light_energy = value
 	_set_moon_light_intensity()
 
-var use_custom_sun_moon_light_fade: bool = false setget set_use_custom_sun_moon_light_fade
-func set_use_custom_sun_moon_light_fade(value: bool) -> void:
-	use_custom_sun_moon_light_fade = value
-	if not value:
-		set_sun_moon_light_fade(_DEFAULT_SUN_MOON_LIGHT_CURVE_FADE)
-	
-	property_list_changed_notify()
-
-# Light curve.
-var sun_moon_light_fade: Curve setget set_sun_moon_light_fade
-func set_sun_moon_light_fade(value: Curve) -> void:
-	sun_moon_light_fade = value
-	_set_moon_light_intensity()
 
 # Day State.
 signal is_day(value)
@@ -540,7 +529,6 @@ func _init():
 	if _sky_node != null && _fog_node != null && _moon_instance != null:
 		_init_properties_ok = true
 		_init_mesh_instances()
-	
 	_skypass_material.set_shader_param("_noise_tex", _DEFAULT_STARS_FIELD_NOISE_TEXTURE)
 
 func _notification(what: int) -> void:
@@ -561,6 +549,7 @@ func _ready():
 	_set_moon_coords(moon_azimuth, moon_altitude)
 
 func _init_properties() -> void:
+
 	_init_properties_ok = true
 	set_sky_visible(sky_visible)
 	set_skydome_radius(skydome_radius)
@@ -593,9 +582,6 @@ func _init_properties() -> void:
 	set_moon_light_path(moon_light_path)
 	set_moon_light_color(moon_light_color)
 	set_moon_light_energy(moon_light_energy)
-	
-	set_use_custom_sun_moon_light_fade(use_custom_sun_moon_light_fade)
-	set_sun_moon_light_fade(sun_moon_light_fade)
 	
 	set_deep_space_euler(deep_space_euler)
 	set_background_color(background_color)
@@ -792,11 +778,11 @@ func _set_sun_light_intensity() -> void:
 		_sun_light_node.light_energy = lerp(0.0, sun_light_energy, _sun_light_altitude_mult)
 
 func _set_moon_light_intensity() -> void:
-	if _moon_light_enable:
+	if _moon_light_enable: 
 		var l: float = lerp(0.0, moon_light_energy, _moon_light_altitude_mult)
 		l *= atm_moon_phases_mult
 		var curveFade = (1.0 - sun_direction.y) * 0.5
-		_moon_light_node.light_energy = l * sun_moon_light_fade.interpolate_baked(curveFade)
+		_moon_light_node.light_energy = l * _DEFAULT_SUN_MOON_LIGHT_CURVE_FADE.interpolate_baked(curveFade)
 
 func _set_deep_space_matrix() -> void:
 	_skypass_material.set_shader_param("_deep_space_matrix", _deep_space_basis)
@@ -872,10 +858,6 @@ func _get_property_list() -> Array:
 	ret.push_back({name = "moon_light_path", type=TYPE_NODE_PATH})
 	ret.push_back({name = "moon_light_color", type=TYPE_COLOR})
 	ret.push_back({name = "moon_light_energy", type=TYPE_REAL, hint=PROPERTY_HINT_RANGE, hint_string="0.0, 8.0"})
-	
-	ret.push_back({name = "use_custom_sun_moon_light_fade", type=TYPE_BOOL})
-	if use_custom_sun_moon_light_fade:
-		ret.push_back({name = "sun_moon_light_fade", type=TYPE_OBJECT, hint=PROPERTY_HINT_RESOURCE_TYPE, hint_string="Curve"})
 	
 	# Deep Space.
 	ret.push_back({name = "DeepSpace", type=TYPE_NIL, usage=PROPERTY_USAGE_GROUP})
