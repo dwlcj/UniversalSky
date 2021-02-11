@@ -717,8 +717,9 @@ func _set_sun_coords(azimuth: float, altitude: float) -> void:
 	_moonpass_material.set_shader_param(_SUN_DIR_PARAM, sun_direction)
 	
 	if _sun_light_enable: 
-		_sun_light_node.transform.origin = _sun_transform.origin
-		_sun_light_node.transform.basis = _sun_transform.basis
+		if _sun_light_node.light_energy > 0.0:
+			_sun_light_node.transform.origin = _sun_transform.origin
+			_sun_light_node.transform.basis = _sun_transform.basis
 	_sun_light_altitude_mult = SkyMath.saturate(sun_direction.y + 0.25)
 		
 	_set_sun_light_color(sun_light_color, sun_horizon_light_color)
@@ -753,8 +754,9 @@ func _set_moon_coords(azimuth: float, altitude: float) -> void:
 	_moon_instance_transform.transform.basis = _moon_transform.basis
 	
 	if _moon_light_enable:
-		_moon_light_node.transform.origin = _moon_transform.origin 
-		_moon_light_node.transform.basis = _moon_transform.basis
+		if _moon_light_node.light_energy > 0.0:
+			_moon_light_node.transform.origin = _moon_transform.origin 
+			_moon_light_node.transform.basis = _moon_transform.basis
 	_moon_light_altitude_mult = SkyMath.saturate(moon_direction.y + 0.30)
 	set_moon_light_color(moon_light_color)
 	_set_moon_light_intensity()
@@ -768,16 +770,24 @@ func _set_moon_viewport_texture() -> void:
 func _set_day_state(value: float, threshold: float = 1.80) -> void:
 	if abs(value) > threshold:
 		emit_signal("is_day", false)
-		set_light_enable(false)
 	else:
 		emit_signal("is_day", true)
-		set_light_enable(true)
+	
+	_evaluate_light_enable()
 
-func set_light_enable(value: bool) -> void:
+func _set_light_enable(value: bool) -> void:
 	if _sun_light_enable:
 		_sun_light_node.visible = value
 	if _moon_light_enable:
-		_moon_light_node.visible = !value;
+		_moon_light_node.visible = !value
+
+func _evaluate_light_enable() -> void:
+	var enable: bool
+	if _sun_light_enable:
+		enable = true if _sun_light_node.light_energy > 0.0 else false
+		_sun_light_node.visible = enable
+	if _moon_light_enable:
+		_moon_light_node.visible = !enable
 
 func _set_sun_light_color(dayCol: Color, horizonCol: Color) -> void:
 	if _sun_light_enable:

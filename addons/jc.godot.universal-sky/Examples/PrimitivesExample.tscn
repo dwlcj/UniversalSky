@@ -26,7 +26,7 @@ render_priority = -125
 shader = ExtResource( 3 )
 shader_param/_sun_disk_color = Color( 1.99219, 1.08267, 0.280152, 1 )
 shader_param/_sun_disk_size = 0.015
-shader_param/_sun_direction = Vector3( 0.160227, 0.839629, -0.518989 )
+shader_param/_sun_direction = Vector3( -0.180244, 0.791618, 0.583826 )
 shader_param/_moon_color = Color( 1, 1, 1, 0.3 )
 shader_param/_moon_size = 0.09
 shader_param/_moon_direction = Vector3( -0.0760686, 0.508996, -0.857401 )
@@ -67,7 +67,7 @@ rings = 16
 render_priority = 123
 shader = ExtResource( 4 )
 shader_param/_density = 0.000787753
-shader_param/_sun_direction = Vector3( 0.160227, 0.839629, -0.518989 )
+shader_param/_sun_direction = Vector3( -0.180244, 0.791618, 0.583826 )
 shader_param/_moon_direction = Vector3( -0.0760686, 0.508996, -0.857401 )
 shader_param/_color_correction_params = Vector3( 0, 0, 1.3 )
 shader_param/_atm_darkness = 0.5
@@ -101,7 +101,7 @@ far = 8192.0
 [node name="Spatial" parent="." instance=ExtResource( 1 )]
 
 [node name="SunLight" type="DirectionalLight" parent="."]
-transform = Transform( -0.9555, -0.247683, 0.160227, 0, 0.54316, 0.839629, -0.294991, 0.802266, -0.518989, 0.160227, 0.839629, -0.518989 )
+transform = Transform( 0.9555, 0.23352, -0.180244, 0, 0.611016, 0.791618, 0.294991, -0.756391, 0.583826, -0.180244, 0.791618, 0.583826 )
 light_color = Color( 0.984314, 0.843137, 0.788235, 1 )
 shadow_enabled = true
 
@@ -132,7 +132,7 @@ tonemaping = 0.0
 exposure = 1.3
 ground_color = Color( 0.3, 0.3, 0.3, 1 )
 sky_layers = 4
-sun_altitude = -32.899
+sun_altitude = 37.663
 sun_azimuth = -17.157
 sun_disk_color = Color( 0.996094, 0.541334, 0.140076, 1 )
 sun_disk_multiplier = 2.0
