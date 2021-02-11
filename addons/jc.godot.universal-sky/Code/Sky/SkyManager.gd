@@ -141,7 +141,7 @@ func set_sun_azimuth(value: float) -> void:
 	sun_azimuth = value
 	_set_sun_coords(value, sun_altitude)
 
-var sun_altitude: float = -57.0 setget set_sun_altitude
+var sun_altitude: float = -27.387 setget set_sun_altitude
 func set_sun_altitude(value: float) -> void:
 	sun_altitude = value
 	_set_sun_coords(sun_azimuth, value)
@@ -205,12 +205,12 @@ func set_sun_light_energy(value: float) -> void:
 	_set_sun_light_intensity()
 
 # Moon Coords.
-var moon_azimuth: float setget set_moon_azimuth
+var moon_azimuth: float = 5.0 setget set_moon_azimuth
 func set_moon_azimuth(value: float) -> void:
 	moon_azimuth = value
 	_set_moon_coords(value, moon_altitude)
 
-var moon_altitude: float setget set_moon_altitude
+var moon_altitude: float = -79.437 setget set_moon_altitude
 func set_moon_altitude(value: float) -> void:
 	moon_altitude = value
 	_set_moon_coords(moon_azimuth, value)
@@ -231,7 +231,7 @@ func set_moon_color(value: Color) -> void:
 	moon_color = value
 	_skypass_material.set_shader_param("_moon_color", value)
 
-var moon_size: float = 0.09 setget set_moon_size
+var moon_size: float = 0.07 setget set_moon_size
 func set_moon_size(value: float) -> void:
 	moon_size = value
 	_skypass_material.set_shader_param("_moon_size", value)
@@ -311,7 +311,7 @@ signal is_day(value)
 #====================- Deep Space -====================#
 var _deep_space_basis := Basis()
 
-var deep_space_euler: Vector3 = Vector3.ZERO setget set_deep_space_euler
+var deep_space_euler:= Vector3(-95.0, 10.0, 0.0) setget set_deep_space_euler
 func set_deep_space_euler(value: Vector3) -> void:
 	deep_space_euler  = value
 	_deep_space_basis = Basis(value)
@@ -363,12 +363,12 @@ func set_stars_field_texture(value: Texture) -> void:
 	stars_field_texture = value 
 	_skypass_material.set_shader_param("_stars_field_texture", value)
 
-var stars_scintillation: float = 1.0 setget set_stars_scintillation
+var stars_scintillation: float = 0.75 setget set_stars_scintillation
 func set_stars_scintillation(value: float) -> void:
 	stars_scintillation = value 
 	_skypass_material.set_shader_param("_stars_scintillation", value)
 
-var stars_scintillation_speed: float = 0.024 setget set_stars_scintillation_speed
+var stars_scintillation_speed: float = 0.01 setget set_stars_scintillation_speed
 func set_stars_scintillation_speed(value: float) -> void:
 	stars_scintillation_speed = value 
 	_skypass_material.set_shader_param("_stars_scintillation_speed", value)
@@ -415,7 +415,7 @@ func set_atm_night_scatter_mode(value: int) -> void:
 	atm_night_scatter_mode = value
 	_set_night_intensity()
 
-var atm_night_tint := Color(0.17, 0.20, 0.25) setget set_atm_night_tint
+var atm_night_tint := Color(0.168627, 0.2, 0.25098) setget set_atm_night_tint
 func set_atm_night_tint(value: Color) -> void:
 	atm_night_tint = value
 	_set_night_intensity()
