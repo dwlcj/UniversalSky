@@ -153,8 +153,7 @@ void opticalDepth(float y, out float sr, out float sm){
 	sm = y * _atm_mie_zenith_length;
 }
 
-/*
-void opticalDepth(float y, out float sr, out float sm)
+void _opticalDepth(float y, out float sr, out float sm)
 {
 	y = max(0.0, y);
 	y = saturate(y * _atm_params.x);
@@ -166,7 +165,6 @@ void opticalDepth(float y, out float sr, out float sm)
 	sr = zenith * _atm_rayleigh_zenith_length;
 	sm = zenith * _atm_mie_zenith_length;
 }
-*/
 
 vec3 atmosphericScattering(float sr, float sm, vec2 mu, vec3 mult){
 	vec3 betaMie = _atm_beta_mie;
@@ -176,14 +174,12 @@ vec3 atmosphericScattering(float sr, float sm, vec2 mu, vec3 mult){
 	vec3 finalExtcFactor = mix(1.0 - extcFactor, (1.0 - extcFactor) * extcFactor, mult.x);
 	
 	float rayleighPhase = rayleighPhase(mu.x);
-	
 	vec3 BRT = betaRay * rayleighPhase;
 	vec3 BMT = betaMie * miePhase(mu.x, _atm_sun_partial_mie_phase);
 	BMT *= _atm_sun_mie_intensity * _atm_sun_mie_tint.rgb;
 	
 	vec3 BRMT = (BRT + BMT) / (betaRay + betaMie);
-	vec3 scatter = _atm_sun_intensity * (BRMT * finalExtcFactor) * _atm_day_tint.rgb;
-	scatter *= mult.y;
+	vec3 scatter = _atm_sun_intensity * (BRMT * finalExtcFactor) * _atm_day_tint.rgb * mult.y;
 	scatter = mix(scatter, scatter * (1.0 - extcFactor), _atm_darkness);
 	
 	vec3 lcol = mix(_atm_day_tint.rgb, _atm_horizon_light_tint.rgb, mult.x);
@@ -198,6 +194,7 @@ varying vec4 world_pos;
 varying vec4 moon_coords;
 varying vec3 deep_space_coords;
 varying vec4 angle_mult;
+
 void vertex(){
 	world_pos = (WORLD_MATRIX * vec4(VERTEX, 1.0));
 	moon_coords.xyz  = mul(_moon_matrix, VERTEX).xyz / _moon_size + 0.5;
@@ -216,25 +213,20 @@ void fragment(){
 	
 	// Atmospheric Scattering.
 	vec2 mu = vec2(dot(_sun_direction, ray), dot(_moon_direction, ray));
-
-	float sr; float sm;
-	opticalDepth(ray.y + _atm_params.z, sr, sm);
+	float sr; float sm; opticalDepth(ray.y + _atm_params.z, sr, sm);
 	vec3 scatter = atmosphericScattering(sr, sm, mu.xy, angle_mult.xyz);
+	col.rgb += scatter.rgb;
 	
+	// Near Space.
 	vec3 nearSpace = vec3(0.0);
-	
-	// SunDisk.
-	vec3 sunDisk = disk(ray, _sun_direction, _sun_disk_size) * 
-		_sun_disk_color.rgb * scatter.rgb;
+	vec3 sunDisk = disk(ray, _sun_direction, _sun_disk_size) * _sun_disk_color.rgb * scatter.rgb;
 	
 	// Moon.
 	vec4 moon = texture(_moon_texture, vec2(-moon_coords.x+1.0, moon_coords.y));
 	moon.rgb = contrastLevel(moon.rgb * _moon_color.rgb, _moon_color.a);
 	moon *= saturate(moon_coords.w);
-	//moon.rgb *= moon.a;
 	float moonMask = saturate(1.0 - moon.a);
 	nearSpace = moon.rgb + (sunDisk.rgb * moonMask);
-	
 	col.rgb += nearSpace;
 	
 	vec3 deepSpace = vec3(0.0);
@@ -247,9 +239,6 @@ void fragment(){
 	deepSpace.rgb += deepSpaceBackground.rgb * moonMask;
 	
 	// Stars Field.
-	/*float starsScintillation = random(UV);
-	starsScintillation = sin((TIME * _stars_scintillation_speed) * starsScintillation);*/
-	
 	float starsScintillation = textureLod(_noise_tex, UV + (TIME * _stars_scintillation_speed), 0.0).r;
 	starsScintillation = mix(1.0, starsScintillation * 1.5, _stars_scintillation);
 	
@@ -259,8 +248,7 @@ void fragment(){
 	deepSpace.rgb += starsField.rgb * moonMask;
 	deepSpace.rgb *= angle_mult.z;
 	col.rgb += deepSpace.rgb;
-	
-	col.rgb += scatter.rgb;
+
 	col.rgb = mix(col.rgb, _ground_color.rgb * scatter, saturate((-ray.y - _atm_params.z)*100.0));
 	col.rgb = tonemapPhoto(col.rgb, _color_correction_params.z, _color_correction_params.y);
 	col.rgb = contrastLevel(col.rgb, _color_correction_params.x);

@@ -1,4 +1,4 @@
-class_name Scatter
+class_name AtmScatter
 """========================================================
 °                       Universal Sky.
 °                   ======================

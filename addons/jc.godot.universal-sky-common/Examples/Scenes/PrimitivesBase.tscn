@@ -215,4 +215,5 @@ transform = Transform( -1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, -567.48
 transform = Transform( -1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, -1083, -8.02954, -1275.56 )
 
 [node name="Spatial6" parent="." instance=ExtResource( 2 )]
-transform = Transform( 100, 0, 0, 0, 25, 0, 0, 0, 100, 0, 0, -11526.4 )
+transform = Transform( 100, 0, 0, 0, 15, 0, 0, 0, 100, 0, 0, -11526.4 )
+visible = false

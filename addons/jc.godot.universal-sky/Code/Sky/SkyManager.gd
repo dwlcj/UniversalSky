@@ -477,7 +477,7 @@ func set_atm_sun_mie_intensity(value: float) -> void:
 var atm_sun_mie_anisotropy: float = 0.8 setget set_atm_sun_mie_anisotropy
 func set_atm_sun_mie_anisotropy(value: float) -> void:
 	atm_sun_mie_anisotropy = value 
-	var partialMiePhase: Vector3 = Scatter.partial_mie_phase(value)
+	var partialMiePhase: Vector3 = AtmScatter.partial_mie_phase(value)
 	var param = "_atm_sun_partial_mie_phase"
 	_skypass_material.set_shader_param(param, partialMiePhase)
 	_fogpass_material.set_shader_param(param, partialMiePhase)
@@ -500,7 +500,7 @@ var atm_moon_mie_anisotropy: float = 0.8 setget set_atm_moon_mie_anisotropy
 func set_atm_moon_mie_anisotropy(value: float) -> void:
 	atm_moon_mie_anisotropy = value 
 	var param = "_atm_moon_partial_mie_phase"
-	var partialMiePhase: Vector3 = Scatter.partial_mie_phase(value)
+	var partialMiePhase: Vector3 = AtmScatter.partial_mie_phase(value)
 	_skypass_material.set_shader_param(param, partialMiePhase)
 	_fogpass_material.set_shader_param(param, partialMiePhase)
 
@@ -621,7 +621,6 @@ func _init_properties() -> void:
 	set_atm_moon_mie_anisotropy(atm_moon_mie_anisotropy)
 	
 	set_fog_visible(fog_visible)
-
 
 func _init_resources() -> void:
 	_sky_mesh.radial_segments = 32
@@ -789,21 +788,21 @@ func _set_deep_space_matrix() -> void:
 
 
 func _set_beta_ray() -> void:
-	var wl_la: Vector3 = Scatter.get_wavelenght_lambda(atm_wavelenghts)
-	var wl = Scatter.get_wavelenght(wl_la)
+	var wl_la: Vector3 = AtmScatter.get_wavelenght_lambda(atm_wavelenghts)
+	var wl = AtmScatter.get_wavelenght(wl_la)
 	var param = "_atm_beta_ray"
 	_skypass_material.set_shader_param(param, 
-		Scatter.beta_ray(wl) * atm_thickness)
+		AtmScatter.beta_ray(wl) * atm_thickness)
 	_fogpass_material.set_shader_param(param, 
-		Scatter.beta_ray(wl) * atm_thickness)
+		AtmScatter.beta_ray(wl) * atm_thickness)
 
 func _set_beta_mie() -> void:
 	var param = "_atm_beta_mie"
 	_skypass_material.set_shader_param(param, 
-		Scatter.beta_mie(atm_mie, atm_turbidity))
+		AtmScatter.beta_mie(atm_mie, atm_turbidity))
 	
 	_fogpass_material.set_shader_param(param, 
-		Scatter.beta_mie(atm_mie, atm_turbidity))
+		AtmScatter.beta_mie(atm_mie, atm_turbidity))
 
 func _set_night_intensity() -> void:
 	var intensity: float
