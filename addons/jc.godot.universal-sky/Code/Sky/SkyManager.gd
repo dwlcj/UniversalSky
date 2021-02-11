@@ -839,11 +839,10 @@ func _get_property_list() -> Array:
 	ret.push_back({name = "tonemaping", type=TYPE_REAL, hint=PROPERTY_HINT_RANGE, hint_string="0.0, 1.0"})
 	ret.push_back({name = "exposure", type = TYPE_REAL})
 	ret.push_back({name = "ground_color", type = TYPE_COLOR})
-	
 	ret.push_back({name = "sky_layers", type=TYPE_INT, hint=PROPERTY_HINT_LAYERS_3D_RENDER})
 	
 	# Sun. 
-	ret.push_back({name = "Sun", type=TYPE_NIL, usage=PROPERTY_USAGE_GROUP})
+	ret.push_back({name = "Sun", type=TYPE_NIL, usage=PROPERTY_USAGE_GROUP, hint_string = "sun_"})
 	ret.push_back({name = "sun_altitude", type=TYPE_REAL, hint=PROPERTY_HINT_RANGE, hint_string="-180.0, 180.0"})
 	ret.push_back({name = "sun_azimuth", type=TYPE_REAL, hint=PROPERTY_HINT_RANGE, hint_string="-180, 180"})
 	ret.push_back({name = "sun_disk_color", type=TYPE_COLOR})
@@ -911,7 +910,7 @@ func _get_property_list() -> Array:
 	ret.push_back({name = "atm_moon_mie_anisotropy", type=TYPE_REAL, hint=PROPERTY_HINT_RANGE, hint_string="-0.999, 0.999"})
 	
 	# Fog. 
-	ret.push_back({name = "Fog", type=TYPE_NIL, usage=PROPERTY_USAGE_GROUP})
+	ret.push_back({name = "Fog", type=TYPE_NIL, usage=PROPERTY_USAGE_GROUP, hint_string = "fog_"})
 	ret.push_back({name = "fog_visible", type=TYPE_BOOL})
 	ret.push_back({name = "fog_density", type=TYPE_REAL, hint=PROPERTY_HINT_EXP_EASING, hint_string="0.0, 1.0"})
 	ret.push_back({name = "fog_rayleigh_depth", type=TYPE_REAL, hint=PROPERTY_HINT_EXP_EASING, hint_string="0.0, 1.0"})
