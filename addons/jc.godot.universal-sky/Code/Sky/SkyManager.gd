@@ -790,6 +790,7 @@ func _set_sun_light_intensity() -> void:
 func _set_moon_light_intensity() -> void:
 	if _moon_light_enable:
 		var l: float = lerp(0.0, moon_light_energy, _moon_light_altitude_mult)
+		l *= atm_moon_phases_mult
 		var curveFade = (1.0 - sun_direction.y) * 0.5
 		_moon_light_node.light_energy = l * sun_moon_light_fade.interpolate(curveFade)
 
