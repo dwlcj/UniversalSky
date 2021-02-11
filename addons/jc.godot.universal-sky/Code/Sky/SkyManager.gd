@@ -344,7 +344,7 @@ func set_background_texture(value: Texture) -> void:
 	background_texture = value
 	_skypass_material.set_shader_param("_background_texture", value)
 
-# Stars Field. 
+# Stars Field.
 var stars_field_color: Color = Color(1.0, 1.0, 1.0, 1.0) setget set_stars_field_color
 func set_stars_field_color(value: Color) -> void:
 	stars_field_color = value
@@ -568,7 +568,6 @@ func _init_properties() -> void:
 	set_tonemaping(tonemaping)
 	set_exposure(exposure)
 	set_ground_color(ground_color)
-	set_use_custom_sun_moon_light_fade(use_custom_sun_moon_light_fade)
 	set_sky_layers(sky_layers)
 	
 	set_sun_azimuth(sun_azimuth)
@@ -594,6 +593,9 @@ func _init_properties() -> void:
 	set_moon_light_path(moon_light_path)
 	set_moon_light_color(moon_light_color)
 	set_moon_light_energy(moon_light_energy)
+	
+	set_use_custom_sun_moon_light_fade(use_custom_sun_moon_light_fade)
+	set_sun_moon_light_fade(sun_moon_light_fade)
 	
 	set_deep_space_euler(deep_space_euler)
 	set_background_color(background_color)
@@ -727,7 +729,6 @@ func _set_sun_coords(azimuth: float, altitude: float) -> void:
 	_set_moon_light_intensity()
 	_set_night_intensity() 
 
-
 func _set_moon_coords(azimuth: float, altitude: float) -> void:
 	if not _init_properties_ok: return
 	assert(_sky_node != null)
@@ -762,7 +763,6 @@ func _set_moon_coords(azimuth: float, altitude: float) -> void:
 	_set_moon_light_intensity()
 	_set_night_intensity()
 
-
 func _set_moon_viewport_texture() -> void:
 	_moon_viewport_texture = _moon_instance.get_texture()
 	_skypass_material.set_shader_param("_moon_texture", _moon_viewport_texture)
@@ -774,12 +774,6 @@ func _set_day_state(value: float, threshold: float = 1.80) -> void:
 		emit_signal("is_day", true)
 	
 	_evaluate_light_enable()
-
-func _set_light_enable(value: bool) -> void:
-	if _sun_light_enable:
-		_sun_light_node.visible = value
-	if _moon_light_enable:
-		_moon_light_node.visible = !value
 
 func _evaluate_light_enable() -> void:
 	var enable: bool
@@ -802,7 +796,7 @@ func _set_moon_light_intensity() -> void:
 		var l: float = lerp(0.0, moon_light_energy, _moon_light_altitude_mult)
 		l *= atm_moon_phases_mult
 		var curveFade = (1.0 - sun_direction.y) * 0.5
-		_moon_light_node.light_energy = l * sun_moon_light_fade.interpolate(curveFade)
+		_moon_light_node.light_energy = l * sun_moon_light_fade.interpolate_baked(curveFade)
 
 func _set_deep_space_matrix() -> void:
 	_skypass_material.set_shader_param("_deep_space_matrix", _deep_space_basis)
