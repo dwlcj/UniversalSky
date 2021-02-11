@@ -510,15 +510,20 @@ func set_fog_visible(value: bool) -> void:
 	assert(_fog_node != null)
 	_fog_node.visible = value
 
-var fog_density: float = 0.001 setget set_fog_density
+var fog_density: float = 0.000735 setget set_fog_density
 func set_fog_density(value: float) -> void:
 	fog_density = value
-	_fogpass_material.set_shader_param("_density", value * 0.05)
+	_fogpass_material.set_shader_param("_density", value)
 
-var fog_depth_params:= Vector2(0.05, 0.015) setget set_fog_depth_params
-func set_fog_depth_params(value: Vector2) -> void:
-	fog_depth_params = value
-	_fogpass_material.set_shader_param("_depth_params", value)
+var fog_rayleigh_depth: float= 0.00071 setget set_fog_rayleigh_depth
+func set_fog_rayleigh_depth(value: float) -> void:
+	fog_rayleigh_depth = value
+	_fogpass_material.set_shader_param("_rayleigh_depth", value)
+
+var fog_mie_depth: float = 0.00071 setget set_fog_mie_depth
+func set_fog_mie_depth(value: float) -> void:
+	fog_mie_depth = value
+	_fogpass_material.set_shader_param("_mie_depth", value)
 
 var fog_layers: int = 524288 setget set_fog_layers
 func set_fog_layers(value: int) -> void:
@@ -624,7 +629,8 @@ func _init_properties() -> void:
 	set_atm_moon_mie_anisotropy(atm_moon_mie_anisotropy)
 	set_fog_visible(fog_visible)
 	set_fog_density(fog_density)
-	set_fog_depth_params(fog_depth_params)
+	set_fog_rayleigh_depth(fog_rayleigh_depth)
+	set_fog_mie_depth(fog_mie_depth)
 
 func _init_resources() -> void:
 	_sky_mesh.radial_segments = 32
@@ -833,9 +839,6 @@ func _get_property_list() -> Array:
 	ret.push_back({name = "tonemaping", type=TYPE_REAL, hint=PROPERTY_HINT_RANGE, hint_string="0.0, 1.0"})
 	ret.push_back({name = "exposure", type = TYPE_REAL})
 	ret.push_back({name = "ground_color", type = TYPE_COLOR})
-	ret.push_back({name = "use_custom_sun_moon_light_fade", type=TYPE_BOOL})
-	if use_custom_sun_moon_light_fade:
-		ret.push_back({name = "sun_moon_light_fade", type=TYPE_OBJECT, hint=PROPERTY_HINT_RESOURCE_TYPE, hint_string="Curve"})
 	
 	ret.push_back({name = "sky_layers", type=TYPE_INT, hint=PROPERTY_HINT_LAYERS_3D_RENDER})
 	
@@ -865,6 +868,10 @@ func _get_property_list() -> Array:
 	ret.push_back({name = "moon_light_path", type=TYPE_NODE_PATH})
 	ret.push_back({name = "moon_light_color", type=TYPE_COLOR})
 	ret.push_back({name = "moon_light_energy", type=TYPE_REAL, hint=PROPERTY_HINT_RANGE, hint_string="0.0, 8.0"})
+	
+	ret.push_back({name = "use_custom_sun_moon_light_fade", type=TYPE_BOOL})
+	if use_custom_sun_moon_light_fade:
+		ret.push_back({name = "sun_moon_light_fade", type=TYPE_OBJECT, hint=PROPERTY_HINT_RESOURCE_TYPE, hint_string="Curve"})
 	
 	# Deep Space.
 	ret.push_back({name = "DeepSpace", type=TYPE_NIL, usage=PROPERTY_USAGE_GROUP})
@@ -906,8 +913,9 @@ func _get_property_list() -> Array:
 	# Fog. 
 	ret.push_back({name = "Fog", type=TYPE_NIL, usage=PROPERTY_USAGE_GROUP})
 	ret.push_back({name = "fog_visible", type=TYPE_BOOL})
-	ret.push_back({name = "fog_density", type=TYPE_REAL, hint=PROPERTY_HINT_RANGE, hint_string="0.0, 10.0"})
-	ret.push_back({name = "fog_depth_params", type=TYPE_VECTOR2})
+	ret.push_back({name = "fog_density", type=TYPE_REAL, hint=PROPERTY_HINT_EXP_EASING, hint_string="0.0, 1.0"})
+	ret.push_back({name = "fog_rayleigh_depth", type=TYPE_REAL, hint=PROPERTY_HINT_EXP_EASING, hint_string="0.0, 1.0"})
+	ret.push_back({name = "fog_mie_depth", type=TYPE_REAL, hint=PROPERTY_HINT_EXP_EASING, hint_string="0.0, 1.0"})
 	ret.push_back({name = "fog_layers", type=TYPE_INT, hint=PROPERTY_HINT_LAYERS_3D_RENDER})
 	return ret;
 

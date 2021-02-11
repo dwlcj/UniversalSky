@@ -41,7 +41,9 @@ uniform vec3 _atm_sun_partial_mie_phase;
 uniform vec3 _atm_moon_partial_mie_phase;
 uniform float _atm_rayleigh_zenith_length;
 uniform float _atm_mie_zenith_length;
-uniform vec2 _depth_params;
+uniform float _rayleigh_depth;
+uniform float _mie_depth;
+
 
 // Math constants.
 const float kPI          = 3.1415927f;
@@ -125,8 +127,8 @@ vec3 atmosphericScattering(float sr, float sm, vec2 mu, vec3 mult, float depth){
 	vec3 finalExtcFactor = mix(1.0 - extcFactor, (1.0 - extcFactor) * extcFactor, mult.x);
 	
 	float rayleighPhase = rayleighPhase(mu.x);
-	vec3 BRT = betaRay * rayleighPhase * saturate(depth * _depth_params.x);
-	vec3 BMT = betaMie * miePhase(mu.x, _atm_sun_partial_mie_phase) * saturate(depth * _depth_params.y);
+	vec3 BRT = betaRay * rayleighPhase * saturate(depth * _rayleigh_depth);
+	vec3 BMT = betaMie * miePhase(mu.x, _atm_sun_partial_mie_phase) * saturate(depth * _mie_depth);
 	BMT *= _atm_sun_mie_intensity * _atm_sun_mie_tint.rgb;
 	
 	vec3 BRMT = (BRT + BMT) / (betaRay + betaMie);
@@ -169,7 +171,7 @@ void fragment(){
 	float sr; float sm; opticalDepth(ray.y + _atm_params.z, sr, sm);
 	vec3 scatter = atmosphericScattering(sr, sm, mu.xy, angle_mult.xyz, linearDepth);
 	
-	vec3 tint = scatter; 
+	vec3 tint = scatter;
 	vec4 fogColor = vec4(tint.rgb, 1.0) * fogFactor;
 	fogColor = vec4((fogColor.rgb), saturate(fogColor.a));
 	
