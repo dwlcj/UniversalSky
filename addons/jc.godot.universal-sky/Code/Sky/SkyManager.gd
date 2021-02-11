@@ -16,7 +16,6 @@ tool extends Node
 
 """
 Add layer for sky and fog.
-8. Add Atmosphere.
 9. Add Fog.
 10. Add TOD.
 11. Add clouds.
@@ -29,8 +28,8 @@ Add layer for sky and fog.
 var _SKYPASS_SHADER =\
 preload("res://addons/jc.godot.universal-sky-common/Shaders/Skypass.shader")
 
-var _FOGPASS_SHADER =\
-preload("res://addons/jc.godot.universal-sky-common/Shaders/Fogpass.shader")
+var _SCATTER_FOG_PASS_SHADER =\
+preload("res://addons/jc.godot.universal-sky-common/Shaders/ScatterFogPass.shader")
 
 var _MOONPASS_SHADER =\
 preload("res://addons/jc.godot.universal-sky-common/Shaders/SimpleMoon.shader")
@@ -482,14 +481,14 @@ func set_atm_sun_mie_anisotropy(value: float) -> void:
 	_skypass_material.set_shader_param(param, partialMiePhase)
 	_fogpass_material.set_shader_param(param, partialMiePhase)
 
-var atm_moon_mie_tint:= Color(0.313726, 0.419608, 0.6) setget set_atm_moon_mie_tint
+var atm_moon_mie_tint:= Color(0.137255, 0.184314, 0.290196) setget set_atm_moon_mie_tint
 func set_atm_moon_mie_tint(value:Color)-> void:
 	atm_moon_mie_tint = value 
 	var param = "_atm_moon_mie_tint"
 	_skypass_material.set_shader_param(param, value)
 	_fogpass_material.set_shader_param(param, value)
 
-var atm_moon_mie_intensity: float = 0.3 setget set_atm_moon_mie_intensity
+var atm_moon_mie_intensity: float = 0.7 setget set_atm_moon_mie_intensity
 func set_atm_moon_mie_intensity(value: float) -> void:
 	atm_moon_mie_intensity = value 
 	var param = "_atm_moon_mie_intensity"
@@ -512,6 +511,16 @@ func set_fog_visible(value: bool) -> void:
 	if not _init_properties_ok: return
 	assert(_fog_node != null)
 	_fog_node.visible = value
+
+var fog_density: float = 0.001 setget set_fog_density
+func set_fog_density(value: float) -> void:
+	fog_density = value
+	_fogpass_material.set_shader_param("_density", value * 0.05)
+
+var fog_depth_params:= Vector2(0.05, 0.015) setget set_fog_depth_params
+func set_fog_depth_params(value: Vector2) -> void:
+	fog_depth_params = value
+	_fogpass_material.set_shader_param("_depth_params", value)
 
 var fog_layers: int = 524288 setget set_fog_layers
 func set_fog_layers(value: int) -> void:
@@ -542,15 +551,11 @@ func _enter_tree() -> void:
 func _exit_tree() -> void:
 	pass
 
-
 func _ready():
 	#var all_child_nodes = get_children()
 	#print(all_child_nodes)
 	_set_sun_coords(sun_azimuth, sun_altitude)
 	_set_moon_coords(moon_azimuth, moon_altitude)
-	#set_sun_light_path(sun_light_path)
-	#set_moon_light_path(moon_light_path)
-	pass
 
 func _init_properties() -> void:
 	_init_properties_ok = true
@@ -619,8 +624,9 @@ func _init_properties() -> void:
 	set_atm_moon_mie_tint(atm_moon_mie_tint)
 	set_atm_moon_mie_intensity(atm_moon_mie_intensity)
 	set_atm_moon_mie_anisotropy(atm_moon_mie_anisotropy)
-	
 	set_fog_visible(fog_visible)
+	set_fog_density(fog_density)
+	set_fog_depth_params(fog_depth_params)
 
 func _init_resources() -> void:
 	_sky_mesh.radial_segments = 32
@@ -630,7 +636,7 @@ func _init_resources() -> void:
 	_skypass_material.render_priority = -125
 	
 	_fog_mesh.size = Vector2(2.0, 2.0);
-	_fogpass_material.shader = _FOGPASS_SHADER
+	_fogpass_material.shader = _SCATTER_FOG_PASS_SHADER
 	_fogpass_material.render_priority = 123;
 	
 	_moonpass_material.shader = _MOONPASS_SHADER
@@ -902,6 +908,8 @@ func _get_property_list() -> Array:
 	# Fog. 
 	ret.push_back({name = "Fog", type=TYPE_NIL, usage=PROPERTY_USAGE_GROUP})
 	ret.push_back({name = "fog_visible", type=TYPE_BOOL})
+	ret.push_back({name = "fog_density", type=TYPE_REAL, hint=PROPERTY_HINT_RANGE, hint_string="0.0, 10.0"})
+	ret.push_back({name = "fog_depth_params", type=TYPE_VECTOR2})
 	ret.push_back({name = "fog_layers", type=TYPE_INT, hint=PROPERTY_HINT_LAYERS_3D_RENDER})
 	return ret;
 

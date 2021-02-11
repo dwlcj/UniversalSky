@@ -5,44 +5,21 @@
 °   Category: Sky.
 °   -----------------------------------------------------
 °   Description:
-°       Sky pass.
+°        Atmospheric Scattering Fog.
 °   -----------------------------------------------------
 °   Copyright:
 °               J. Cuellar 2020. MIT License.
 °                   See: LICENSE Archive.
 ========================================================*/
 shader_type spatial;
-render_mode unshaded, depth_draw_never, cull_front, skip_vertex_transform;
+render_mode blend_mix, cull_disabled, depth_draw_always, unshaded;
 
-// Sun.
-uniform vec4 _sun_disk_color;
-uniform float _sun_disk_size;
+uniform float _density;
 uniform vec3 _sun_direction;
-
-// Moon.
-uniform sampler2D _moon_texture;
-uniform vec4 _moon_color: hint_color = vec4(1.0);
-uniform float _moon_size;
 uniform vec3 _moon_direction;
-uniform mat3 _moon_matrix;
 
-// x = contrast, y = tonemap level, exposure..
-uniform vec3 _color_correction_params;
-uniform vec4 _ground_color: hint_color;
-
-// Background.
-uniform sampler2D _background_texture: hint_albedo;
-uniform vec4 _background_color;
-
-// Stars Field.
-uniform vec4 _stars_field_color;
-uniform sampler2D _stars_field_texture: hint_albedo;
-uniform float _stars_scintillation;
-uniform float _stars_scintillation_speed;
-
-uniform sampler2D _noise_tex: hint_albedo;
-
-uniform mat3 _deep_space_matrix;
+// x = contrast, y = tonemap level, exposure.
+uniform vec3 _color_correction_params; 
 
 // Atmospheric Scattering.
 uniform float _atm_darkness;
@@ -51,10 +28,9 @@ uniform vec4 _atm_day_tint: hint_color;
 uniform vec4 _atm_horizon_light_tint: hint_color;
 uniform vec4 _atm_night_tint: hint_color;
 
-// x = ymultiplier, y= down offset, z = horizon offset.
-uniform vec3 _atm_params = vec3(1.0, 0.0, 0.0);
+// x = ymultiplier, y = down offset, z = horizon offset.
+uniform vec3 _atm_params = vec3(1.0, 0.0, 0.0); 
 
-// Sun mie phase.
 uniform vec4 _atm_sun_mie_tint: hint_color;
 uniform float _atm_sun_mie_intensity;
 uniform vec4 _atm_moon_mie_tint: hint_color;
@@ -65,12 +41,9 @@ uniform vec3 _atm_sun_partial_mie_phase;
 uniform vec3 _atm_moon_partial_mie_phase;
 uniform float _atm_rayleigh_zenith_length;
 uniform float _atm_mie_zenith_length;
+uniform vec2 _depth_params;
 
-const float kRAYLEIGH_ZENITH_LENGTH = 8.4e3;
-const float kMIE_ZENITH_LENGTH = 1.25e3;
-
-// Common.
-// Math Constants.
+// Math constants.
 const float kPI          = 3.1415927f;
 const float kINV_PI      = 0.3183098f;
 const float kHALF_PI     = 1.5707963f;
@@ -113,29 +86,8 @@ vec3 tonemapACES(vec3 color, float exposure, float level){
 	return mix(color.rgb, ret, level);
 }
 
-vec3 mul(mat3 mat, vec3 vec){
-	vec3 ret;
-	ret.x = dot(mat[0].xyz, vec.xyz);
-	ret.y = dot(mat[1].xyz, vec.xyz);
-	ret.z = dot(mat[2].xyz, vec.xyz);
-	return ret;
-}
-
-vec2 equirectUV(vec3 norm){
-	vec2 ret;
-	ret.x = (atan(norm.x, norm.z) + kPI) * kINV_TAU;
-	ret.y = acos(norm.y) * kINV_PI;
-	return ret;
-}
-
-float random(vec2 uv){
-	float ret = dot(uv, vec2(12.9898, 78.233));
-	return fract(43758.5453 * sin(ret));
-}
-
-float disk(vec3 norm, vec3 coords, lowp float size){
-	float dist = length(norm - coords);
-	return 1.0 - step(size, dist);
+float beerLaw(float d, float factor){
+	return exp(-d * factor);
 }
 
 float rayleighPhase(float mu){
@@ -166,7 +118,7 @@ void _opticalDepth(float y, out float sr, out float sm)
 	sm = zenith * _atm_mie_zenith_length;
 }
 
-vec3 atmosphericScattering(float sr, float sm, vec2 mu, vec3 mult){
+vec3 atmosphericScattering(float sr, float sm, vec2 mu, vec3 mult, float depth){
 	vec3 betaMie = _atm_beta_mie;
 	vec3 betaRay = _atm_beta_ray;
 	
@@ -174,8 +126,8 @@ vec3 atmosphericScattering(float sr, float sm, vec2 mu, vec3 mult){
 	vec3 finalExtcFactor = mix(1.0 - extcFactor, (1.0 - extcFactor) * extcFactor, mult.x);
 	
 	float rayleighPhase = rayleighPhase(mu.x);
-	vec3 BRT = betaRay * rayleighPhase;
-	vec3 BMT = betaMie * miePhase(mu.x, _atm_sun_partial_mie_phase);
+	vec3 BRT = betaRay * rayleighPhase * saturate(depth * _depth_params.x);
+	vec3 BMT = betaMie * miePhase(mu.x, _atm_sun_partial_mie_phase) * saturate(depth * _depth_params.y);
 	BMT *= _atm_sun_mie_intensity * _atm_sun_mie_tint.rgb;
 	
 	vec3 BRMT = (BRT + BMT) / (betaRay + betaMie);
@@ -189,71 +141,46 @@ vec3 atmosphericScattering(float sr, float sm, vec2 mu, vec3 mult){
 	return (scatter * lcol) + nscatter;
 }
 
-
-varying vec4 world_pos;
-varying vec4 moon_coords;
-varying vec3 deep_space_coords;
+varying mat4 camera;
 varying vec4 angle_mult;
 
 void vertex(){
-	world_pos = (WORLD_MATRIX * vec4(VERTEX, 1.0));
-	moon_coords.xyz  = mul(_moon_matrix, VERTEX).xyz / _moon_size + 0.5;
-	moon_coords.w = dot(world_pos.xyz, _moon_direction); 
-	deep_space_coords.xyz = (_deep_space_matrix * VERTEX).xyz;
+	POSITION = vec4(VERTEX.xy, -1.0, 1.0);
 	angle_mult.x = saturate(1.0 - _sun_direction.y);
 	angle_mult.y = saturate(_sun_direction.y + 0.45);
 	angle_mult.z = saturate(-_sun_direction.y + 0.30);
 	angle_mult.w = saturate(-_sun_direction.y + 0.60);
-	VERTEX = (MODELVIEW_MATRIX * vec4(VERTEX, 1e-5)).xyz;
+	camera = CAMERA_MATRIX;
 }
 
 void fragment(){
-	vec3 col = vec3(0.0);
-	vec3 ray = normalize(world_pos).xyz;
+	float depthRaw = texture(DEPTH_TEXTURE, SCREEN_UV).r;
+	vec3 ndc = vec3(SCREEN_UV, depthRaw) * 2.0 - 1.0;
 	
-	// Atmospheric Scattering.
+	vec4 view = INV_PROJECTION_MATRIX * vec4(ndc, 1.0);
+  	view.xyz /= view.w;
+	
+	vec3 ray = normalize(view.xyz);
+	ray = (camera * vec4(ray.xyz, 0.0)).xyz;
+
+	float linearDepth = -view.z;
+	float fogFactor = 1.0 - beerLaw(linearDepth, _density);
+	
 	vec2 mu = vec2(dot(_sun_direction, ray), dot(_moon_direction, ray));
 	float sr; float sm; opticalDepth(ray.y + _atm_params.z, sr, sm);
-	vec3 scatter = atmosphericScattering(sr, sm, mu.xy, angle_mult.xyz);
-	col.rgb += scatter.rgb;
+	vec3 scatter = atmosphericScattering(sr, sm, mu.xy, angle_mult.xyz, linearDepth);
 	
-	// Near Space.
-	vec3 nearSpace = vec3(0.0);
-	vec3 sunDisk = disk(ray, _sun_direction, _sun_disk_size) * _sun_disk_color.rgb * scatter.rgb;
+	vec3 tint = scatter; 
+	vec4 fogColor = vec4(tint.rgb, 1.0) * fogFactor;
+	fogColor = vec4(saturateRGB(fogColor.rgb), saturate(fogColor.a));
 	
-	// Moon.
-	vec4 moon = texture(_moon_texture, vec2(-moon_coords.x+1.0, moon_coords.y));
-	moon.rgb = contrastLevel(moon.rgb * _moon_color.rgb, _moon_color.a);
-	moon *= saturate(moon_coords.w);
-	float moonMask = saturate(1.0 - moon.a);
-	nearSpace = moon.rgb + (sunDisk.rgb * moonMask);
-	col.rgb += nearSpace;
+	if(depthRaw > 0.999999){
+		fogColor = vec4(0.0);
+	}
+	fogColor.rgb = tonemapPhoto(fogColor.rgb, _color_correction_params.z, _color_correction_params.y);
+	fogColor.rgb = contrastLevel(fogColor.rgb, _color_correction_params.x);
 	
-	vec3 deepSpace = vec3(0.0);
-	vec2 deepSpaceUV = equirectUV(normalize(deep_space_coords));
-	
-	// Background.
-	vec3 deepSpaceBackground = textureLod(_background_texture, deepSpaceUV, 0.0).rgb;
-	deepSpaceBackground *= _background_color.rgb;
-	deepSpaceBackground = contrastLevel(deepSpaceBackground, _background_color.a);
-	deepSpace.rgb += deepSpaceBackground.rgb * moonMask;
-	
-	// Stars Field.
-	float starsScintillation = textureLod(_noise_tex, UV + (TIME * _stars_scintillation_speed), 0.0).r;
-	starsScintillation = mix(1.0, starsScintillation * 1.5, _stars_scintillation);
-	
-	vec3 starsField = textureLod(_stars_field_texture, deepSpaceUV, 0.0).rgb * _stars_field_color.rgb;
-	starsField = saturateRGB(mix(starsField.rgb, starsField.rgb * starsScintillation, _stars_scintillation));
-	//deepSpace.rgb -= saturate(starsField.r*10.0);
-	deepSpace.rgb += starsField.rgb * moonMask;
-	deepSpace.rgb *= angle_mult.z;
-	col.rgb += deepSpace.rgb;
-
-	col.rgb = mix(col.rgb, _ground_color.rgb * scatter, saturate((-ray.y - _atm_params.z)*100.0));
-	col.rgb = tonemapPhoto(col.rgb, _color_correction_params.z, _color_correction_params.y);
-	col.rgb = contrastLevel(col.rgb, _color_correction_params.x);
-	
-	ALBEDO = col.rgb;
+	ALBEDO = fogColor.rgb;
+	ALPHA = fogColor.a;
 }
-
 
