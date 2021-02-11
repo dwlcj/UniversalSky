@@ -207,7 +207,7 @@ func set_sun_light_energy(value: float) -> void:
 	sun_light_energy = value
 	_set_sun_light_intensity()
 
-# Moon.
+# Moon Coords.
 var moon_azimuth: float setget set_moon_azimuth
 func set_moon_azimuth(value: float) -> void:
 	moon_azimuth = value
@@ -228,6 +228,7 @@ var moon_direction := Vector3.ZERO
 signal moon_direction_changed(value)
 signal moon_transform_changed(value)
 
+# Moon Graphics.
 var moon_color:= Color(1.0, 1.0, 1.0, 0.3) setget set_moon_color
 func set_moon_color(value: Color) -> void: 
 	moon_color = value
@@ -301,11 +302,13 @@ func set_use_custom_sun_moon_light_fade(value: bool) -> void:
 	
 	property_list_changed_notify()
 
+# Light curve.
 var sun_moon_light_fade: Curve setget set_sun_moon_light_fade
 func set_sun_moon_light_fade(value: Curve) -> void:
 	sun_moon_light_fade = value
 	_set_moon_light_intensity()
 
+# Day State.
 signal is_day(value)
 
 #====================- Deep Space -====================#
@@ -372,6 +375,120 @@ var stars_scintillation_speed: float = 0.024 setget set_stars_scintillation_spee
 func set_stars_scintillation_speed(value: float) -> void:
 	stars_scintillation_speed = value 
 	_skypass_material.set_shader_param("_stars_scintillation_speed", value)
+
+
+#Atmospheric Scattering
+var atm_wavelenghts:= Vector3(680.0, 550.0, 440.0) setget set_atm_wavelenghts
+func set_atm_wavelenghts(value: Vector3) -> void:
+	atm_wavelenghts = value
+	_set_beta_ray()
+
+var atm_darkness: float = 0.5 setget set_atm_darkness
+func set_atm_darkness(value: float) -> void:
+	atm_darkness = value
+	var param = "_atm_darkness"
+	_skypass_material.set_shader_param(param, value)
+	_fogpass_material.set_shader_param(param, value)
+
+var atm_sun_intensity: float = 30.0 setget set_atm_sun_intensity
+func set_atm_sun_intensity(value: float) -> void:
+	atm_sun_intensity = value 
+	var param = "_atm_sun_intensity"
+	_skypass_material.set_shader_param(param, value)
+	_fogpass_material.set_shader_param(param, value)
+
+var atm_day_tint := Color(0.784314, 0.854902, 0.988235) setget set_atm_day_tint
+func set_atm_day_tint(value: Color) -> void:
+	atm_day_tint = value
+	var param = "_atm_day_tint"
+	_skypass_material.set_shader_param(param, value)
+	_fogpass_material.set_shader_param(param, value)
+
+var atm_horizon_light_tint := Color(0.988235, 0.698039, 0.505882) setget set_atm_horizon_light_tint
+func set_atm_horizon_light_tint(value: Color) -> void:
+	atm_horizon_light_tint = value
+	var param = "_atm_horizon_light_tint"
+	_skypass_material.set_shader_param(param, value)
+	_fogpass_material.set_shader_param(param, value)
+
+var atm_moon_phases_mult: float
+
+var atm_night_scatter_mode: int = 0 setget set_atm_night_scatter_mode
+func set_atm_night_scatter_mode(value: int) -> void:
+	atm_night_scatter_mode = value
+	_set_night_intensity()
+
+var atm_night_tint := Color(0.17, 0.20, 0.25) setget set_atm_night_tint
+func set_atm_night_tint(value: Color) -> void:
+	atm_night_tint = value
+	_set_night_intensity()
+
+var atm_params:= Vector3(2.0, 0.0, 0.0) setget set_atm_params
+func set_atm_params(value: Vector3) -> void:
+	atm_params = value
+	var param = "_atm_params"
+	_skypass_material.set_shader_param(param, value)
+	_fogpass_material.set_shader_param(param, value)
+
+var atm_thickness: float = 0.7 setget set_atm_thickness
+func set_atm_thickness(value: float) -> void:
+	atm_thickness = value
+	_set_beta_ray()
+
+var atm_mie: float = 0.07 setget set_atm_mie
+func set_atm_mie(value: float) -> void:
+	atm_mie = value
+	_set_beta_mie()
+
+var atm_turbidity: float = 0.001 setget set_atm_turbidity
+func set_atm_turbidity(value: float) -> void:
+	atm_turbidity = value
+	_set_beta_mie()
+
+var atm_sun_mie_tint:= Color(1.0, 1.0, 1.0, 1.0) setget set_atm_sun_mie_tint
+func set_atm_sun_mie_tint(value:Color)-> void:
+	atm_sun_mie_tint = value 
+	var param = "_atm_sun_mie_tint"
+	_skypass_material.set_shader_param(param, value)
+	_fogpass_material.set_shader_param(param, value)
+
+var atm_sun_mie_intensity: float = 1.0 setget set_atm_sun_mie_intensity
+func set_atm_sun_mie_intensity(value: float) -> void:
+	atm_sun_mie_intensity = value 
+	var param = "_atm_sun_mie_intensity"
+	_skypass_material.set_shader_param(param, value)
+	_fogpass_material.set_shader_param(param, value)
+
+var atm_sun_mie_anisotropy: float = 0.8 setget set_atm_sun_mie_anisotropy
+func set_atm_sun_mie_anisotropy(value: float) -> void:
+	atm_sun_mie_anisotropy = value 
+	var partialMiePhase: Vector3 = Scatter.partial_mie_phase(value)
+	var param = "_atm_sun_partial_mie_phase"
+	_skypass_material.set_shader_param(param, partialMiePhase)
+	_fogpass_material.set_shader_param(param, partialMiePhase)
+
+var atm_moon_mie_tint:= Color(0.313726, 0.419608, 0.6) setget set_atm_moon_mie_tint
+func set_atm_moon_mie_tint(value:Color)-> void:
+	atm_moon_mie_tint = value 
+	var param = "_atm_moon_mie_tint"
+	_skypass_material.set_shader_param(param, value)
+	_fogpass_material.set_shader_param(param, value)
+
+var atm_moon_mie_intensity: float = 0.3 setget set_atm_moon_mie_intensity
+func set_atm_moon_mie_intensity(value: float) -> void:
+	atm_moon_mie_intensity = value 
+	var param = "_atm_moon_mie_intensity"
+	_skypass_material.set_shader_param(param, value * atm_moon_phases_mult)
+	_fogpass_material.set_shader_param(param, value * atm_moon_phases_mult)
+
+var atm_moon_mie_anisotropy: float = 0.8 setget set_atm_moon_mie_anisotropy
+func set_atm_moon_mie_anisotropy(value: float) -> void:
+	atm_moon_mie_anisotropy = value 
+	var param = "_atm_moon_partial_mie_phase"
+	var partialMiePhase: Vector3 = Scatter.partial_mie_phase(value)
+	_skypass_material.set_shader_param(param, partialMiePhase)
+	_fogpass_material.set_shader_param(param, partialMiePhase)
+
 
 # Fog.
 var fog_visible:= true setget set_fog_visible
@@ -469,6 +586,22 @@ func _init_properties() -> void:
 	set_stars_scintillation(stars_scintillation)
 	set_stars_scintillation_speed(stars_scintillation_speed)
 	
+	set_atm_wavelenghts(atm_wavelenghts)
+	set_atm_darkness(atm_darkness)
+	set_atm_sun_intensity(atm_sun_intensity)
+	set_atm_day_tint(atm_day_tint)
+	set_atm_night_tint(atm_night_tint)
+	set_atm_horizon_light_tint(atm_horizon_light_tint)
+	set_atm_params(atm_params)
+	set_atm_thickness(atm_thickness)
+	set_atm_mie(atm_mie)
+	set_atm_turbidity(atm_turbidity)
+	set_atm_sun_mie_tint(atm_sun_mie_tint)
+	set_atm_sun_mie_intensity(atm_sun_mie_intensity)
+	set_atm_sun_mie_anisotropy(atm_sun_mie_anisotropy)
+	set_atm_moon_mie_tint(atm_moon_mie_tint)
+	set_atm_moon_mie_intensity(atm_moon_mie_intensity)
+	set_atm_moon_mie_anisotropy(atm_moon_mie_anisotropy)
 	
 	set_fog_visible(fog_visible)
 
@@ -509,7 +642,7 @@ func _build_dome() -> void:
 		self.add_child(_moon_instance)
 	
 	_init_mesh_instances()
-	
+
 func _init_mesh_instances() -> void:
 	assert(_sky_node != null)
 	_sky_node.transform.origin = _DEFAULT_ORIGIN
@@ -565,8 +698,7 @@ func _set_sun_coords(azimuth: float, altitude: float) -> void:
 	_set_sun_light_color(sun_light_color, sun_horizon_light_color)
 	_set_sun_light_intensity()
 	_set_moon_light_intensity()
-	
-	#_set_night_intensity 
+	_set_night_intensity() 
 
 
 func _set_moon_coords(azimuth: float, altitude: float) -> void:
@@ -600,8 +732,7 @@ func _set_moon_coords(azimuth: float, altitude: float) -> void:
 	_moon_light_altitude_mult = SkyMath.saturate(moon_direction.y + 0.30)
 	set_moon_light_color(moon_light_color)
 	_set_moon_light_intensity()
-	
-	#_set_night_intensity()
+	_set_night_intensity()
 
 
 func _set_moon_viewport_texture() -> void:
@@ -638,6 +769,37 @@ func _set_moon_light_intensity() -> void:
 
 func _set_deep_space_matrix() -> void:
 	_skypass_material.set_shader_param("_deep_space_matrix", _deep_space_basis)
+
+
+func _set_beta_ray() -> void:
+	var wl_la: Vector3 = Scatter.get_wavelenght_lambda(atm_wavelenghts)
+	var wl = Scatter.get_wavelenght(wl_la)
+	var param = "_atm_beta_ray"
+	_skypass_material.set_shader_param(param, 
+		Scatter.beta_ray(wl) * atm_thickness)
+	_fogpass_material.set_shader_param(param, 
+		Scatter.beta_ray(wl) * atm_thickness)
+
+func _set_beta_mie() -> void:
+	var param = "_atm_beta_mie"
+	_skypass_material.set_shader_param(param, 
+		Scatter.beta_mie(atm_mie, atm_turbidity))
+	
+	_fogpass_material.set_shader_param(param, 
+		Scatter.beta_mie(atm_mie, atm_turbidity))
+
+func _set_night_intensity() -> void:
+	var intensity: float
+	if atm_night_scatter_mode == 0:
+		intensity = SkyMath.saturate(-sun_direction.y + 0.30)
+		atm_moon_phases_mult = intensity
+	else:
+		atm_moon_phases_mult = SkyMath.saturate(-sun_direction.dot(moon_direction)+0.60) 
+		intensity = SkyMath.saturate(moon_direction.y) * atm_moon_phases_mult
+	_skypass_material.set_shader_param("_atm_night_tint", atm_night_tint * intensity)
+	_fogpass_material.set_shader_param("_atm_night_tint", atm_night_tint * intensity)
+	set_atm_moon_mie_intensity(atm_moon_mie_intensity)
+
 
 func _get_property_list() -> Array:
 	var ret: Array
@@ -699,6 +861,25 @@ func _get_property_list() -> Array:
 	
 	ret.push_back({name = "stars_scintillation", type=TYPE_REAL, hint=PROPERTY_HINT_RANGE, hint_string="0.0, 1.0"})
 	ret.push_back({name = "stars_scintillation_speed", type=TYPE_REAL, hint=PROPERTY_HINT_RANGE, hint_string="0.0, 0.1"})
+	
+	ret.push_back({name = "Atmosphere", type=TYPE_NIL,usage=PROPERTY_USAGE_GROUP, hint_string = "atm_"})
+	ret.push_back({name = "atm_darkness", type=TYPE_REAL, hint=PROPERTY_HINT_RANGE, hint_string="0.0, 1.0"})
+	ret.push_back({name = "atm_wavelenghts", type=TYPE_VECTOR3})
+	ret.push_back({name = "atm_sun_intensity", type=TYPE_REAL})
+	ret.push_back({name = "atm_day_tint", type=TYPE_COLOR})
+	ret.push_back({name = "atm_horizon_light_tint", type=TYPE_COLOR})
+	ret.push_back({name = "atm_night_scatter_mode", type=TYPE_INT, hint=PROPERTY_HINT_ENUM, hint_string="OppositeSun, Moon"})
+	ret.push_back({name = "atm_night_tint", type=TYPE_COLOR})
+	ret.push_back({name = "atm_params", type=TYPE_VECTOR3})
+	ret.push_back({name = "atm_thickness", type=TYPE_REAL})
+	ret.push_back({name = "atm_mie", type=TYPE_REAL})
+	ret.push_back({name = "atm_turbidity", type=TYPE_REAL})
+	ret.push_back({name = "atm_sun_mie_tint", type=TYPE_COLOR})
+	ret.push_back({name = "atm_sun_mie_intensity", type=TYPE_REAL})
+	ret.push_back({name = "atm_sun_mie_anisotropy", type=TYPE_REAL, hint=PROPERTY_HINT_RANGE, hint_string="0.0, 0.999"})
+	ret.push_back({name = "atm_moon_mie_tint", type=TYPE_COLOR})
+	ret.push_back({name = "atm_moon_mie_intensity", type=TYPE_REAL})
+	ret.push_back({name = "atm_moon_mie_anisotropy", type=TYPE_REAL, hint=PROPERTY_HINT_RANGE, hint_string="-0.999, 0.999"})
 	
 	# Fog. 
 	ret.push_back({name = "Fog", type=TYPE_NIL, usage=PROPERTY_USAGE_GROUP})

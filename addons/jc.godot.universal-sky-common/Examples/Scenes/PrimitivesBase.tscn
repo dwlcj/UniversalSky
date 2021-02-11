@@ -7,7 +7,7 @@
 [ext_resource path="res://addons/jc.godot.universal-sky-common/Examples/Graphics/Meshes/Primitives/Meshes/KnotTorus.obj" type="ArrayMesh" id=10]
 
 [sub_resource type="SpatialMaterial" id=1]
-albedo_color = Color( 0.490196, 0.384314, 0.286275, 1 )
+albedo_color = Color( 0.603922, 0.603922, 0.603922, 1 )
 albedo_texture = ExtResource( 8 )
 uv1_scale = Vector3( 150, 150, 1 )
 

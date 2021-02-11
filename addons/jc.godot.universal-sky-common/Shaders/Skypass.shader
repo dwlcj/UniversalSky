@@ -44,6 +44,29 @@ uniform sampler2D _noise_tex: hint_albedo;
 
 uniform mat3 _deep_space_matrix;
 
+// Atmospheric Scattering.
+uniform float _atm_darkness;
+uniform float _atm_sun_intensity;
+uniform vec4 _atm_day_tint: hint_color;
+uniform vec4 _atm_horizon_light_tint: hint_color;
+uniform vec4 _atm_night_tint: hint_color;
+
+// x = ymultiplier, y= down offset, z = horizon offset.
+uniform vec3 _atm_params = vec3(1.0, 0.0, 0.0);
+
+// Sun mie phase.
+uniform vec4 _atm_sun_mie_tint: hint_color;
+uniform float _atm_sun_mie_intensity;
+uniform vec4 _atm_moon_mie_tint: hint_color;
+uniform float _atm_moon_mie_intensity;
+uniform vec3 _atm_beta_ray;
+uniform vec3 _atm_beta_mie;
+uniform vec3 _atm_sun_partial_mie_phase;
+uniform vec3 _atm_moon_partial_mie_phase;
+
+const float kRAYLEIGH_ZENITH_LENGTH = 8.4e3;
+const float kMIE_ZENITH_LENGTH = 1.25e3;
+
 // Common.
 // Math Constants.
 const float kPI          = 3.1415927f;
@@ -113,6 +136,61 @@ float disk(vec3 norm, vec3 coords, lowp float size){
 	return 1.0 - step(size, dist);
 }
 
+float rayleighPhase(float mu){
+	return k3PI16 * (1.0 + mu * mu);
+}
+
+float miePhase(float mu, vec3 partial){
+	return kPI4 * (partial.x) * (pow(partial.y - partial.z * mu, -1.5));
+}
+
+void opticalDepth(float y, out float sr, out float sm){
+	y = max(0.03, y + 0.03) + _atm_params.y;
+	y = 1.0 / (y * _atm_params.x);
+	sr = y * kRAYLEIGH_ZENITH_LENGTH;
+	sm = y * kMIE_ZENITH_LENGTH;
+}
+
+/*
+void opticalDepth(float y, out float sr, out float sm)
+{
+	y = max(0.0, y);
+	y = saturate(y * _atm_params.x);
+	
+	float zenith = acos(y);
+	zenith = cos(zenith) + 0.15 * pow(93.885 - ((zenith * 180.0) / kPI), -1.253);
+	zenith = 1.0 / (zenith + _atm_params.y);
+	
+	sr = zenith * kRAYLEIGH_ZENITH_LENGTH;
+	sm = zenith * kMIE_ZENITH_LENGTH;
+}
+*/
+
+vec3 atmosphericScattering(float sr, float sm, vec2 mu, vec3 mult){
+	vec3 betaMie = _atm_beta_mie;
+	vec3 betaRay = _atm_beta_ray;
+	
+	vec3 extcFactor = saturateRGB(exp(-(betaRay * sr + betaMie * sm)));
+	vec3 finalExtcFactor = mix(1.0 - extcFactor, (1.0 - extcFactor) * extcFactor, mult.x);
+	
+	float rayleighPhase = rayleighPhase(mu.x);
+	
+	vec3 BRT = betaRay * rayleighPhase;
+	vec3 BMT = betaMie * miePhase(mu.x, _atm_sun_partial_mie_phase);
+	BMT *= _atm_sun_mie_intensity * _atm_sun_mie_tint.rgb;
+	
+	vec3 BRMT = (BRT + BMT) / (betaRay + betaMie);
+	vec3 scatter = _atm_sun_intensity * (BRMT * finalExtcFactor) * _atm_day_tint.rgb;
+	scatter *= mult.y;
+	scatter = mix(scatter, scatter * (1.0 - extcFactor), _atm_darkness);
+	
+	vec3 lcol = mix(_atm_day_tint.rgb, _atm_horizon_light_tint.rgb, mult.x);
+	vec3 nscatter = (1.0 - extcFactor) * _atm_night_tint.rgb;
+	nscatter += miePhase(mu.y, _atm_moon_partial_mie_phase) * 
+		_atm_moon_mie_tint.rgb * _atm_moon_mie_intensity * 0.001;
+	return (scatter * lcol) + nscatter;
+}
+
 
 varying vec4 world_pos;
 varying vec4 moon_coords;
@@ -135,7 +213,11 @@ void fragment(){
 	vec3 ray = normalize(world_pos).xyz;
 	
 	// Atmospheric Scattering.
-	vec3 scatter = vec3(1.0);
+	vec2 mu = vec2(dot(_sun_direction, ray), dot(_moon_direction, ray));
+
+	float sr; float sm;
+	opticalDepth(ray.y + _atm_params.z, sr, sm);
+	vec3 scatter = atmosphericScattering(sr, sm, mu.xy, angle_mult.xyz);
 	
 	vec3 nearSpace = vec3(0.0);
 	
@@ -176,6 +258,7 @@ void fragment(){
 	deepSpace.rgb *= angle_mult.z;
 	col.rgb += deepSpace.rgb;
 	
+	col.rgb += scatter.rgb;
 	col.rgb = mix(col.rgb, _ground_color.rgb * scatter, saturate((-ray.y)*100.0));
 	col.rgb = tonemapPhoto(col.rgb, _color_correction_params.z, _color_correction_params.y);
 	col.rgb = contrastLevel(col.rgb, _color_correction_params.x);
