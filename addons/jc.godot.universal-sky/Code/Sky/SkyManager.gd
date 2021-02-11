@@ -15,8 +15,6 @@ tool extends Node
 
 
 """
-Add layer for sky and fog.
-9. Add Fog.
 10. Add TOD.
 11. Add clouds.
 """
@@ -95,7 +93,7 @@ func set_sky_visible(value: bool) -> void:
 	assert(_sky_node != null)
 	_sky_node.visible = value
 
-export var skydome_radius: float = 10.0 setget set_skydome_radius
+var skydome_radius: float = 10.0 setget set_skydome_radius
 func set_skydome_radius(value: float) -> void:
 	skydome_radius = value
 	if not _init_properties_ok: return
@@ -893,7 +891,7 @@ func _get_property_list() -> Array:
 	ret.push_back({name = "atm_night_scatter_mode", type=TYPE_INT, hint=PROPERTY_HINT_ENUM, hint_string="OppositeSun, Moon"})
 	ret.push_back({name = "atm_night_tint", type=TYPE_COLOR})
 	ret.push_back({name = "atm_params", type=TYPE_VECTOR3})
-	ret.push_back({name = "atm_thickness", type=TYPE_REAL})
+	ret.push_back({name = "atm_thickness", type=TYPE_REAL, hint=PROPERTY_HINT_RANGE, hint_string="0.0, 10.0"})
 	ret.push_back({name = "atm_rayleigh_zenith_length", type=TYPE_REAL, hint=PROPERTY_HINT_RANGE, hint_string="0.0, 8.4e3"})
 	ret.push_back({name = "atm_mie_zenith_length", type=TYPE_REAL, hint=PROPERTY_HINT_RANGE, hint_string="0.0, 1.25e3"})
 	ret.push_back({name = "atm_mie", type=TYPE_REAL})

@@ -105,8 +105,7 @@ void opticalDepth(float y, out float sr, out float sm){
 	sm = y * _atm_mie_zenith_length;
 }
 
-void _opticalDepth(float y, out float sr, out float sm)
-{
+void _opticalDepth(float y, out float sr, out float sm){
 	y = max(0.0, y);
 	y = saturate(y * _atm_params.x);
 	
@@ -172,7 +171,7 @@ void fragment(){
 	
 	vec3 tint = scatter; 
 	vec4 fogColor = vec4(tint.rgb, 1.0) * fogFactor;
-	fogColor = vec4(saturateRGB(fogColor.rgb), saturate(fogColor.a));
+	fogColor = vec4((fogColor.rgb), saturate(fogColor.a));
 	
 	if(depthRaw > 0.999999){
 		fogColor = vec4(0.0);

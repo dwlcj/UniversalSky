@@ -41,7 +41,6 @@ uniform float _stars_scintillation;
 uniform float _stars_scintillation_speed;
 
 uniform sampler2D _noise_tex: hint_albedo;
-
 uniform mat3 _deep_space_matrix;
 
 // Atmospheric Scattering.
