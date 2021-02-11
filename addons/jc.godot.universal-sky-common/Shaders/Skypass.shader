@@ -171,15 +171,14 @@ void fragment(){
 	
 	vec3 starsField = textureLod(_stars_field_texture, deepSpaceUV, 0.0).rgb * _stars_field_color.rgb;
 	starsField = saturateRGB(mix(starsField.rgb, starsField.rgb * starsScintillation, _stars_scintillation));
+	//deepSpace.rgb -= saturate(starsField.r*10.0);
 	deepSpace.rgb += starsField.rgb * moonMask;
 	deepSpace.rgb *= angle_mult.z;
 	col.rgb += deepSpace.rgb;
 	
-	
+	col.rgb = mix(col.rgb, _ground_color.rgb * scatter, saturate((-ray.y)*100.0));
 	col.rgb = tonemapPhoto(col.rgb, _color_correction_params.z, _color_correction_params.y);
 	col.rgb = contrastLevel(col.rgb, _color_correction_params.x);
-	
-	col.rgb = mix(col.rgb, _ground_color.rgb * scatter, saturate((-ray.y)*100.0));
 	
 	ALBEDO = col.rgb;
 }

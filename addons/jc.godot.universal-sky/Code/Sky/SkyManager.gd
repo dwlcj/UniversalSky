@@ -15,6 +15,7 @@ tool extends Node
 
 
 """
+Add layer for sky and fog.
 8. Add Atmosphere.
 9. Add Fog.
 10. Add TOD.
@@ -129,6 +130,12 @@ func set_ground_color(value: Color) -> void:
 	ground_color = value 
 	_skypass_material.set_shader_param("_ground_color", value)
 
+var sky_layers: int = 4 setget set_sky_layers
+func set_sky_layers(value: int) -> void:
+	sky_layers = value
+	if not _init_properties_ok: return
+	assert(_sky_node != null)
+	_sky_node.layers = value
 
 # Near Space.
 # Sun Coords..
@@ -373,7 +380,14 @@ func set_fog_visible(value: bool) -> void:
 	if not _init_properties_ok: return
 	assert(_fog_node != null)
 	_fog_node.visible = value
-	
+
+var fog_layers: int = 524288 setget set_fog_layers
+func set_fog_layers(value: int) -> void:
+	fog_layers = value
+	if not _init_properties_ok: return
+	assert(_fog_node != null)
+	_fog_node.layers = value
+
 func _init():
 	_init_resources()
 	_sky_node = get_node_or_null(_SKY_INSTANCE_NAME)
@@ -390,7 +404,7 @@ func _notification(what: int) -> void:
 
 func _enter_tree() -> void:
 	_build_dome()
-	init_properties()
+	_init_properties()
 	_set_nodes_owner() # Debug.
 
 func _exit_tree() -> void:
@@ -406,7 +420,7 @@ func _ready():
 	#set_moon_light_path(moon_light_path)
 	pass
 
-func init_properties() -> void:
+func _init_properties() -> void:
 	_init_properties_ok = true
 	set_sky_visible(sky_visible)
 	set_skydome_radius(skydome_radius)
@@ -415,6 +429,7 @@ func init_properties() -> void:
 	set_exposure(exposure)
 	set_ground_color(ground_color)
 	set_use_custom_sun_moon_light_fade(use_custom_sun_moon_light_fade)
+	set_sky_layers(sky_layers)
 	
 	set_sun_azimuth(sun_azimuth)
 	set_sun_altitude(sun_altitude)
@@ -640,6 +655,8 @@ func _get_property_list() -> Array:
 	if use_custom_sun_moon_light_fade:
 		ret.push_back({name = "sun_moon_light_fade", type=TYPE_OBJECT, hint=PROPERTY_HINT_RESOURCE_TYPE, hint_string="Curve"})
 	
+	ret.push_back({name = "sky_layers", type=TYPE_INT, hint=PROPERTY_HINT_LAYERS_3D_RENDER})
+	
 	# Sun. 
 	ret.push_back({name = "Sun", type=TYPE_NIL, usage=PROPERTY_USAGE_GROUP})
 	ret.push_back({name = "sun_altitude", type=TYPE_REAL, hint=PROPERTY_HINT_RANGE, hint_string="-180.0, 180.0"})
@@ -686,7 +703,7 @@ func _get_property_list() -> Array:
 	# Fog. 
 	ret.push_back({name = "Fog", type=TYPE_NIL, usage=PROPERTY_USAGE_GROUP})
 	ret.push_back({name = "fog_visible", type=TYPE_BOOL})
-	
+	ret.push_back({name = "fog_layers", type=TYPE_INT, hint=PROPERTY_HINT_LAYERS_3D_RENDER})
 	return ret;
 
 
