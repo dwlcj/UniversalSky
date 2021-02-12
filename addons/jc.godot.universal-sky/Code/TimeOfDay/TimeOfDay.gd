@@ -34,7 +34,7 @@ func set_total_hours(value: float) -> void:
 	if Engine.editor_hint:
 		_set_celestials_coords()
 
-var day: int = 27 setget set_day
+var day: int = 12 setget set_day
 func set_day(value: int) -> void:
 	day = value
 	if Engine.editor_hint:

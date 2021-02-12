@@ -489,7 +489,7 @@ func set_atm_moon_mie_anisotropy(value: float) -> void:
 	_fogpass_material.set_shader_param(param, partialMiePhase)
 
 # Fog.
-var fog_visible:= true setget set_fog_visible
+var fog_visible:= false setget set_fog_visible
 func set_fog_visible(value: bool) -> void:
 	fog_visible = value 
 	if not _init_properties_ok: return
@@ -602,7 +602,7 @@ func _init():
 func _enter_tree() -> void:
 	_build_dome()
 	_init_properties()
-	_set_nodes_owner() # Debug.
+	#_set_nodes_owner() # Debug.
 
 func _ready():
 	#var all_child_nodes = get_children()
