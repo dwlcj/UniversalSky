@@ -16,11 +16,7 @@ tool extends Node
 
 """
 10. Add TOD.
-11. Add clouds.
-12. Añadir funcion exponencial a la niebla.
-13. Optimizar y probar rendimiento.
 """
-
 #-------------------
 # Resources.
 #-------------------
@@ -45,6 +41,9 @@ var _DEFAULT_STARS_FIELD_TEXTURE =\
 preload("res://addons/jc.godot.universal-sky-common/Assets/ThirdParty/Graphics/Textures/MilkyWay/StarField.jpg")
 
 var _DEFAULT_STARS_FIELD_NOISE_TEXTURE =\
+preload("res://addons/jc.godot.universal-sky-common/Assets/MyAssets/Graphics/Textures/noise.jpg")
+
+var _DEFAULT_CLOUDS_TEXTURE =\
 preload("res://addons/jc.godot.universal-sky-common/Assets/MyAssets/Graphics/Textures/noise.jpg")
 
 # Scenes.
@@ -521,6 +520,80 @@ func set_fog_layers(value: int) -> void:
 	assert(_fog_node != null)
 	_fog_node.layers = value
 
+# Clouds.
+var clouds_thickness: float = 0.03 setget set_clouds_thickness
+func set_clouds_thickness(value: float) -> void:
+	clouds_thickness = value
+	_skypass_material.set_shader_param("_clouds_thickness", value)
+
+var clouds_coverage: float = 0.65 setget set_clouds_coverage
+func set_clouds_coverage(value: float) -> void:
+	clouds_coverage = value 
+	_skypass_material.set_shader_param("_clouds_coverage", value)
+
+var clouds_absorption: float = 11.0 setget set_clouds_absorption
+func set_clouds_absorption(value: float) -> void:
+	clouds_absorption = value 
+	_skypass_material.set_shader_param("_clouds_absorption", value)
+
+var clouds_step: int = 10 setget set_clouds_step
+func set_clouds_step(value: int) -> void:
+	clouds_step = value
+	_skypass_material.set_shader_param("_clouds_step", value)
+
+var clouds_noise_frequency: float = 3.0 setget set_clouds_noise_frequency
+func set_clouds_noise_frequency(value: float) -> void:
+	clouds_noise_frequency = value
+	_skypass_material.set_shader_param("_clouds_noise_freq", value)
+
+var clouds_sky_tint_fade: float = 1.0 setget set_clouds_sky_tint_fade
+func set_clouds_sky_tint_fade(value: float) -> void:
+	clouds_sky_tint_fade = value 
+	_skypass_material.set_shader_param("_clouds_sky_tint_fade", value)
+
+var clouds_intensity: float = 7.0 setget set_clouds_intensity
+func set_clouds_intensity(value: float) -> void:
+	clouds_intensity = value
+	_skypass_material.set_shader_param("_clouds_intensity", value)
+
+var clouds_size: float = 15.0 setget set_clouds_size
+func set_clouds_size(value: float) -> void:
+	clouds_size = value
+	_skypass_material.set_shader_param("_clouds_size", value)
+
+var clouds_offset:= Vector3(1.0, 0.0, 0.0) setget set_clouds_offset
+func set_clouds_offset(value: Vector3) -> void:
+	clouds_offset = value
+	_skypass_material.set_shader_param("_clouds_offset", value)
+
+var clouds_offset_speed: float = 0.01 setget set_clouds_offset_speed
+func set_clouds_offset_speed(value: float) -> void:
+	clouds_offset_speed = value 
+	_skypass_material.set_shader_param("_clouds_offset_speed", value)
+
+var clouds_enable_set_texture: bool setget set_clouds_enable_set_texture
+func set_clouds_enable_set_texture(value: bool) -> void:
+	clouds_enable_set_texture = value
+	
+	if not value:
+		set_clouds_texture(_DEFAULT_CLOUDS_TEXTURE)
+		
+	property_list_changed_notify()
+
+
+var clouds_texture: Texture setget set_clouds_texture
+func set_clouds_texture(value: Texture) -> void:
+	clouds_texture = value
+	_skypass_material.set_shader_param("_clouds_texture", value)
+
+
+
+
+
+
+
+
+
 func _init():
 	_init_resources()
 	_sky_node = get_node_or_null(_SKY_INSTANCE_NAME)
@@ -619,6 +692,20 @@ func _init_properties() -> void:
 	set_fog_density(fog_density)
 	set_fog_rayleigh_depth(fog_rayleigh_depth)
 	set_fog_mie_depth(fog_mie_depth)
+	
+	set_clouds_thickness(clouds_thickness)
+	set_clouds_coverage(clouds_coverage)
+	set_clouds_absorption(clouds_absorption)
+	set_clouds_step(clouds_step)
+	set_clouds_noise_frequency(clouds_noise_frequency)
+	set_clouds_sky_tint_fade(clouds_sky_tint_fade)
+	set_clouds_intensity(clouds_intensity)
+	set_clouds_size(clouds_size)
+	set_clouds_offset(clouds_offset)
+	set_clouds_offset_speed(clouds_offset_speed)
+	set_clouds_enable_set_texture(clouds_enable_set_texture)
+	if clouds_enable_set_texture:
+		set_clouds_texture(clouds_texture)
 
 func _init_resources() -> void:
 	_sky_mesh.radial_segments = 32
@@ -903,6 +990,24 @@ func _get_property_list() -> Array:
 	ret.push_back({name = "fog_rayleigh_depth", type=TYPE_REAL, hint=PROPERTY_HINT_EXP_EASING, hint_string="0.0, 1.0"})
 	ret.push_back({name = "fog_mie_depth", type=TYPE_REAL, hint=PROPERTY_HINT_EXP_EASING, hint_string="0.0, 1.0"})
 	ret.push_back({name = "fog_layers", type=TYPE_INT, hint=PROPERTY_HINT_LAYERS_3D_RENDER})
+	
+	# Clouds.
+	ret.push_back({name = "Clouds", type=TYPE_NIL,usage=PROPERTY_USAGE_GROUP, hint_string = "clouds_"})
+	ret.push_back({name = "clouds_thickness", type=TYPE_REAL, hint=PROPERTY_HINT_RANGE, hint_string="0.0, 0.1"})
+	ret.push_back({name = "clouds_coverage", type=TYPE_REAL, hint=PROPERTY_HINT_RANGE, hint_string="0.0, 1.0"})
+	ret.push_back({name = "clouds_absorption", type=TYPE_REAL, hint=PROPERTY_HINT_RANGE, hint_string="0.0, 100.0"})
+	ret.push_back({name = "clouds_step", type=TYPE_INT})
+	ret.push_back({name = "clouds_noise_frequency", type=TYPE_REAL, hint=PROPERTY_HINT_RANGE, hint_string="0.0, 100.0"})
+	ret.push_back({name = "clouds_sky_tint_fade", type=TYPE_REAL, hint=PROPERTY_HINT_RANGE, hint_string="0.0, 1.0"})
+	ret.push_back({name = "clouds_intensity", type=TYPE_REAL, hint=PROPERTY_HINT_RANGE, hint_string="0.0, 100.0"})
+	ret.push_back({name = "clouds_size", type=TYPE_REAL, hint=PROPERTY_HINT_RANGE, hint_string="0.0, 50.0"})
+	ret.push_back({name = "clouds_offset", type=TYPE_VECTOR3})
+	ret.push_back({name = "clouds_offset_speed", type=TYPE_REAL,  hint=PROPERTY_HINT_RANGE, hint_string="0.0, 1.0"})
+	ret.push_back({name = "clouds_enable_set_texture", type=TYPE_BOOL})
+	
+	if clouds_enable_set_texture:
+		ret.push_back({name = "clouds_texture", type=TYPE_OBJECT, hint=PROPERTY_HINT_FILE, hint_string="Texture"})
+	
 	return ret;
 
 

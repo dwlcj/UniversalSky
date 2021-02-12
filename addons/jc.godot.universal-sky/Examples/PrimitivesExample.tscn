@@ -9,7 +9,7 @@
 [ext_resource path="res://addons/jc.godot.universal-sky-common/Assets/ThirdParty/Graphics/Textures/MilkyWay/StarField.jpg" type="Texture" id=7]
 [ext_resource path="res://addons/jc.godot.universal-sky-common/Assets/MyAssets/Graphics/Textures/noise.jpg" type="Texture" id=8]
 
-[sub_resource type="Environment" id=1]
+[sub_resource type="Environment" id=4]
 fog_color = Color( 0.74902, 0.752941, 1, 1 )
 fog_depth_curve = 0.732043
 tonemap_mode = 3
@@ -19,14 +19,14 @@ glow_intensity = 0.13
 glow_blend_mode = 1
 glow_bicubic_upscale = true
 
-[sub_resource type="ViewportTexture" id=2]
+[sub_resource type="ViewportTexture" id=6]
 
-[sub_resource type="ShaderMaterial" id=3]
+[sub_resource type="ShaderMaterial" id=7]
 render_priority = -125
 shader = ExtResource( 3 )
 shader_param/_sun_disk_color = Color( 1.99219, 1.08267, 0.280152, 1 )
 shader_param/_sun_disk_size = 0.015
-shader_param/_sun_direction = Vector3( -1e-07, 0.969209, -0.246238 )
+shader_param/_sun_direction = Vector3( -1e-07, 0.494655, -0.86909 )
 shader_param/_moon_color = Color( 1, 1, 1, 0.3 )
 shader_param/_moon_size = 0.07
 shader_param/_moon_direction = Vector3( -0.0856789, 0.183316, -0.979313 )
@@ -54,20 +54,31 @@ shader_param/_atm_sun_partial_mie_phase = Vector3( 0.36, 1.64, 1.6 )
 shader_param/_atm_moon_partial_mie_phase = Vector3( 0.36, 1.64, 1.6 )
 shader_param/_atm_rayleigh_zenith_length = 8400.0
 shader_param/_atm_mie_zenith_length = 1250.0
-shader_param/_moon_texture = SubResource( 2 )
+shader_param/_clouds_coverage = 0.65
+shader_param/_clouds_thickness = 0.03
+shader_param/_clouds_absorption = 11.0
+shader_param/_clouds_step = 10
+shader_param/_clouds_noise_freq = 3.0
+shader_param/_clouds_sky_tint_fade = 1.0
+shader_param/_clouds_intensity = 7.0
+shader_param/_clouds_size = 15.0
+shader_param/_clouds_offset_speed = 0.01
+shader_param/_clouds_offset = Vector3( 1, 0, 0 )
+shader_param/_moon_texture = SubResource( 6 )
 shader_param/_background_texture = ExtResource( 6 )
 shader_param/_stars_field_texture = ExtResource( 7 )
 shader_param/_noise_tex = ExtResource( 8 )
+shader_param/_clouds_texture = ExtResource( 8 )
 
-[sub_resource type="SphereMesh" id=4]
+[sub_resource type="SphereMesh" id=8]
 radial_segments = 32
 rings = 16
 
-[sub_resource type="ShaderMaterial" id=5]
+[sub_resource type="ShaderMaterial" id=9]
 render_priority = 123
 shader = ExtResource( 4 )
-shader_param/_density = 0.000787947
-shader_param/_sun_direction = Vector3( -1e-07, 0.969209, -0.246238 )
+shader_param/_density = 0.000735
+shader_param/_sun_direction = Vector3( -1e-07, 0.494655, -0.86909 )
 shader_param/_moon_direction = Vector3( -0.0856789, 0.183316, -0.979313 )
 shader_param/_color_correction_params = Vector3( 0, 0, 1.3 )
 shader_param/_atm_darkness = 0.5
@@ -86,10 +97,10 @@ shader_param/_atm_sun_partial_mie_phase = Vector3( 0.36, 1.64, 1.6 )
 shader_param/_atm_moon_partial_mie_phase = Vector3( 0.36, 1.64, 1.6 )
 shader_param/_atm_rayleigh_zenith_length = 8400.0
 shader_param/_atm_mie_zenith_length = 1250.0
-shader_param/_rayleigh_depth = 0.0791296
-shader_param/_mie_depth = 0.000342908
+shader_param/_rayleigh_depth = 0.00071
+shader_param/_mie_depth = 0.00071
 
-[sub_resource type="QuadMesh" id=6]
+[sub_resource type="QuadMesh" id=10]
 size = Vector2( 2, 2 )
 
 [node name="Main" type="Spatial"]
@@ -99,30 +110,23 @@ transform = Transform( 0.97712, 0.0170575, -0.212004, 0, 0.996779, 0.080199, 0.2
 fov = 96.6
 far = 8192.0
 
-[node name="Spatial" parent="." instance=ExtResource( 1 )]
-
 [node name="SunLight" type="DirectionalLight" parent="."]
-transform = Transform( -1, 3.93607e-07, -1e-07, 0, 0.246238, 0.969209, 4.06111e-07, 0.969209, -0.246238, 0, 0.969209, -0.246238 )
-light_color = Color( 0.984314, 0.843137, 0.788235, 1 )
+transform = Transform( -1, 5.69164e-08, -1e-07, 0, 0.86909, 0.494655, 1.15063e-07, 0.494655, -0.86909, 0, 0.494655, -0.869089 )
+light_color = Color( 0.988319, 0.725979, 0.649047, 1 )
+light_energy = 0.744655
 shadow_enabled = true
 
 [node name="MoonLight" type="DirectionalLight" parent="."]
-transform = Transform( 0, -0.997103, -0.0760686, -0.859892, -0.0388311, 0.508996, -0.510475, 0.0654108, -0.857401, -0.0760685, 0.508996, -0.857401 )
+transform = Transform( 0, -0.916887, 0.399148, -0.938223, 0.138118, 0.317271, -0.346031, -0.37449, -0.860244, 0.399148, 0.317272, -0.860244 )
 visible = false
 light_color = Color( 0.572549, 0.776471, 0.956863, 1 )
 light_energy = 0.0
 shadow_enabled = true
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource( 1 )
+environment = SubResource( 4 )
 
-[node name="ReflectionProbe" type="ReflectionProbe" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.28389, 0 )
-layers = 8
-update_mode = 1
-max_distance = 16384.0
-extents = Vector3( 2000, 2000, 2000 )
-cull_mask = 4
+[node name="Spatial" parent="." instance=ExtResource( 1 )]
 
 [node name="SkyManager" type="Node" parent="."]
 script = ExtResource( 2 )
@@ -133,7 +137,7 @@ tonemaping = 0.0
 exposure = 1.3
 ground_color = Color( 0.3, 0.3, 0.3, 1 )
 sky_layers = 4
-sun_altitude = -14.255
+sun_altitude = -60.353
 sun_azimuth = 0.0
 sun_disk_color = Color( 0.996094, 0.541334, 0.140076, 1 )
 sun_disk_multiplier = 2.0
@@ -178,27 +182,48 @@ atm_moon_mie_tint = Color( 0.137255, 0.184314, 0.290196, 1 )
 atm_moon_mie_intensity = 0.7
 atm_moon_mie_anisotropy = 0.8
 fog_visible = true
-fog_density = 0.000787947
-fog_rayleigh_depth = 0.0791296
-fog_mie_depth = 0.000342908
+fog_density = 0.000735
+fog_rayleigh_depth = 0.00071
+fog_mie_depth = 0.00071
 fog_layers = 524288
+clouds_thickness = 0.03
+clouds_coverage = 0.65
+clouds_absorption = 11.0
+clouds_step = 10
+clouds_noise_frequency = 3.0
+clouds_sky_tint_fade = 1.0
+clouds_intensity = 7.0
+clouds_size = 15.0
+clouds_offset = Vector3( 1, 0, 0 )
+clouds_offset_speed = 0.01
+clouds_enable_set_texture = false
 
 [node name="SkyNode" type="MeshInstance" parent="SkyManager"]
 transform = Transform( 10, 0, 0, 0, 10, 0, 0, 0, 10, 1e-07, 1e-07, 1e-07 )
 layers = 4
-material_override = SubResource( 3 )
+material_override = SubResource( 7 )
 cast_shadow = 0
 extra_cull_margin = 16384.0
-mesh = SubResource( 4 )
+mesh = SubResource( 8 )
 material/0 = null
 
 [node name="FogNode" type="MeshInstance" parent="SkyManager"]
 layers = 524288
-material_override = SubResource( 5 )
+material_override = SubResource( 9 )
 cast_shadow = 0
 extra_cull_margin = 16384.0
-mesh = SubResource( 6 )
+mesh = SubResource( 10 )
 material/0 = null
 
 [node name="MoonRender" parent="SkyManager" instance=ExtResource( 5 )]
 size = Vector2( 256, 256 )
+
+[node name="ReflectionProbe" type="ReflectionProbe" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.28389, 0 )
+layers = 8
+update_mode = 1
+max_distance = 16384.0
+extents = Vector3( 2000, 2000, 2000 )
+cull_mask = 4
+interior_enable = true
+interior_ambient_color = Color( 0.35909, 0.268738, 0.578125, 1 )
