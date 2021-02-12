@@ -16,6 +16,13 @@ class_name TimeOfDay tool """XD""" extends Node
 const RAD_2_DEG: float = 57.2957795
 const DEG_2_RAD: float = 0.0174533
 
+export var debug: bool = false setget set_debug
+func set_debug(value: bool) -> void:
+	debug = value
+	_compute_sun_coordinates()
+	print(_sun_coords * Vector2(RAD_2_DEG, RAD_2_DEG))
+	
+
 var sky_node: SkyManager
 var sky_node_found: bool = false
 
@@ -216,45 +223,53 @@ func _check_cycle() -> void:
 func _set_celestials_coords():
 	if sky_node_found:
 		_compute_sun_coordinates()
-		sky_node.sun_altitude = _sun_coords.y * RAD_2_DEG
-		sky_node.sun_azimuth = _sun_coords.x * RAD_2_DEG
+		sky_node.sun_altitude = _sun_coords.y * SkyMath.RAD_2_DEG
+		sky_node.sun_azimuth = _sun_coords.x * SkyMath.RAD_2_DEG
 		
 		if compute_moon_coords:
 			_compute_moon_coordinates()
-			sky_node.moon_altitude = _moon_coords.y * RAD_2_DEG
-			sky_node.moon_azimuth = _moon_coords.x * RAD_2_DEG
+			sky_node.moon_altitude = _moon_coords.y * SkyMath.RAD_2_DEG
+			sky_node.moon_azimuth = _moon_coords.x * SkyMath.RAD_2_DEG
 
 # x = azimuth y = altitude.
 func _compute_sun_coordinates() -> void:
-	_set_latitude_rad(); _set_total_hours_utc(); _set_time_scale()
+	_set_latitude_rad(); 
+	_set_total_hours_utc(); 
+	_set_time_scale()
 	_set_oblecl()
 	# 1: Get orbital elements.
 	_sun_orbital_elements.get_orbital_elements(0, _time_scale) 
 	_sun_orbital_elements.M = SkyMath.rev(_sun_orbital_elements.M)
 	
 	# Mean Anomaly in radians.
-	var MRad: float = DEG_2_RAD * _sun_orbital_elements.M
+	var MRad: float = SkyMath.DEG_2_RAD * _sun_orbital_elements.M
 	
 	# 2: Compute eccentric anomaly.
-	var E: float = _sun_orbital_elements.M + RAD_2_DEG * _sun_orbital_elements.e * sin(MRad) * (1 + _sun_orbital_elements.e * cos(MRad))
+	#E = M + (180/pi) * e * sin(M) * (1 + e * cos(M))
+	var E: float = _sun_orbital_elements.M + SkyMath.RAD_2_DEG * _sun_orbital_elements.e * sin(MRad) * (1 + _sun_orbital_elements.e * cos(MRad))
 	
-	var ERad = DEG_2_RAD * E
+	var ERad = SkyMath.DEG_2_RAD * E
 
 	# Compute rectangular coordinates.
 	# Rectangular coordinates of the sun in the plane of the ecliptic.
 	var xv: float = cos(ERad) - _sun_orbital_elements.e
 	var yv: float = sin(ERad) * sqrt(1 - _sun_orbital_elements.e * _sun_orbital_elements.e)
 	
+	
+	
 	# Convert to distance and true anomaly(r = radians, v = degrees).
 	var r: float = sqrt(xv * xv + yv * yv)
-	var v: float = RAD_2_DEG * atan2(yv, xv)
+	var v: float = SkyMath.RAD_2_DEG * atan2(yv, xv)
 	_sun_distance = r # Set sun distance.
+
 
 	# Compute true longitude.
 	var lonSun: float = v + _sun_orbital_elements.w
 	lonSun = SkyMath.rev(lonSun) # Normalize.
-	var lonSunRad: float = DEG_2_RAD * lonSun # To radians.
+	var lonSunRad: float = SkyMath.DEG_2_RAD * lonSun # To radians.
 	_true_sun_longitude = lonSunRad # Set sun longitude
+	
+	
 
 	# Compute Ecliptic and Ecuatorial coords.
 	# Ecliptic rectangular coordinates
@@ -269,8 +284,15 @@ func _compute_sun_coordinates() -> void:
 	var ze: float = ys * oblecSin + 0.0 * oblecCos
 
 	# Compute ascension and declination.
-	var RA: float = RAD_2_DEG * atan2(ye, xe) / 15 # Right ascension.
+	var RA: float = SkyMath.RAD_2_DEG * atan2(ye, xe) / 15 # Right ascension.
+	
+	# Decl =  atan2( zequat, sqrt( xequat*xequat + yequat*yequat) )
 	var decl = atan2(ze, sqrt(xe * xe + ye * ye)) # Declination.
+	
+		
+
+	
+
 
 	# Mean longitude.
 	var L: float = _sun_orbital_elements.w + _sun_orbital_elements.M
@@ -278,18 +300,23 @@ func _compute_sun_coordinates() -> void:
 	
 	# Set mean sun longitude.
 	_mean_sun_longitude = L
-	
+
 	# Compute sideral time.
+	#  GMST0 = ( L + 180_deg ) / 15 = L/15 + 12h
 	var GMST0 = ((L/15) + 12)
 	
-	_sideral_time = GMST0 + _total_hours_utc + longitude / 15 + 15 / 15
-	_local_sideral_time =  DEG_2_RAD * _sideral_time * 15
+	_sideral_time = GMST0 + _total_hours_utc + longitude / 15 # + 15 / 15
+	_local_sideral_time =  SkyMath.DEG_2_RAD * _sideral_time * 15
 	
 	# Hour angle.
 	var HA: float = (_sideral_time - RA) * 15
 	
+
+	
 	# Hour angle in radians.
-	var HARAD: float = DEG_2_RAD * HA
+	var HARAD: float = SkyMath.DEG_2_RAD * HA
+	
+	
 
 	# Compute Hour angle and declination in rectangular coords.
 	# HA anf Decl in rectangular coordinates.
@@ -297,17 +324,18 @@ func _compute_sun_coordinates() -> void:
 	var x: float = cos(HARAD) * declCos # X Axis points to the celestial equator in the south.
 	var y: float = sin(HARAD) * declCos # Y axis points to the horizon in the west.
 	var z: float = sin(decl) # Z axis points to the north celestial pole.
-	
+
 	# Rotate the rectangualar coordinates system along of the Y axis.
-	var sinLat: float = sin(_latitude_rad)
-	var cosLat: float = cos(_latitude_rad)
+	var sinLat: float = sin(latitude * SkyMath.DEG_2_RAD)
+	var cosLat: float = cos(latitude * SkyMath.DEG_2_RAD)
 	var xhor: float = x * sinLat - z * cosLat
 	var yhor: float = y
 	var zhor: float = x * cosLat + z * sinLat
 
 	# Return azimtuh and altitude.
 	_sun_coords.x = atan2(yhor, xhor) + PI
-	_sun_coords.y = (PI * 0.5) - atan2(zhor, sqrt(xhor * xhor + yhor * yhor)) 
+	_sun_coords.y =(PI * 0.5) - asin(zhor) # atan2(zhor, sqrt(xhor * xhor + yhor * yhor)) 
+	
 
 func _compute_moon_coordinates() -> void:
 	# Orbital elements.
@@ -316,26 +344,25 @@ func _compute_moon_coordinates() -> void:
 	_moon_orbital_elements.w = SkyMath.rev(_moon_orbital_elements.w)
 	_moon_orbital_elements.M = SkyMath.rev(_moon_orbital_elements.M)
 	
-	var NRad: float = DEG_2_RAD * _moon_orbital_elements.N
-	var IRad: float = DEG_2_RAD * _moon_orbital_elements.i
-	var MRad: float = DEG_2_RAD * _moon_orbital_elements.M
+	var NRad: float = SkyMath.DEG_2_RAD * _moon_orbital_elements.N
+	var IRad: float = SkyMath.DEG_2_RAD * _moon_orbital_elements.i
+	var MRad: float = SkyMath.DEG_2_RAD * _moon_orbital_elements.M
 	
 	# Eccentric anomaly.
-	var E: float = _moon_orbital_elements.M + RAD_2_DEG * _moon_orbital_elements.e * sin(MRad) * (1 + _sun_orbital_elements.e * cos(MRad)) 
+	var E: float = _moon_orbital_elements.M + SkyMath.RAD_2_DEG * _moon_orbital_elements.e * sin(MRad) * (1 + _sun_orbital_elements.e * cos(MRad)) 
 	
-	var ERad: float = DEG_2_RAD * E
+	var ERad: float = SkyMath.DEG_2_RAD * E
 	
-	# Rectangular coordinates.
 	# Rectangular coordinates of the sun in the plane of the ecliptic.
 	var xv: float = _moon_orbital_elements.a * (cos(ERad) - _moon_orbital_elements.e)
 	var yv: float = _moon_orbital_elements.a *(sin(ERad) * sqrt(1 - _moon_orbital_elements.e * _moon_orbital_elements.e)) * sin(ERad)
 	
 	# Convert to distance and true anomaly(r = radians, v = degrees).
 	var r: float = sqrt(xv * xv + yv * yv)
-	var v: float = RAD_2_DEG * atan2(yv, xv)
+	var v: float = SkyMath.RAD_2_DEG * atan2(yv, xv)
 	v = SkyMath.rev(v)
 	
-	var l: float = DEG_2_RAD * v + _moon_orbital_elements.w
+	var l: float = SkyMath.DEG_2_RAD * v + _moon_orbital_elements.w
 	
 	var cosL: float = cos(l)
 	var sinL: float = sin(l)
@@ -349,17 +376,17 @@ func _compute_moon_coordinates() -> void:
 	
 	# Geocentric coordinates.
 	# Geocentric position for the moon and Heliocentric position for the planets.
-	var lonecl: float = RAD_2_DEG * atan2(yeclip, xeclip)
+	var lonecl: float = SkyMath.RAD_2_DEG * atan2(yeclip, xeclip)
 	lonecl = SkyMath.rev(lonecl)
 	
-	var latecl: float = RAD_2_DEG * atan2(zeclip, sqrt(xeclip * xeclip + yeclip * yeclip))
+	var latecl: float = SkyMath.RAD_2_DEG * atan2(zeclip, sqrt(xeclip * xeclip + yeclip * yeclip))
 	
 	# get true sun longitude.
 	var lonsun: float = _true_sun_longitude
 	
 	# Ecliptic longitude and latitude in radians.
-	var loneclRad: float = DEG_2_RAD * lonecl
-	var lateclRad: float = DEG_2_RAD * latecl
+	var loneclRad: float = SkyMath.DEG_2_RAD * lonecl
+	var lateclRad: float = SkyMath.DEG_2_RAD * latecl
 	
 	var nr: float = 1.0
 	var xh: float = nr * cos(loneclRad) * cos(lateclRad)
@@ -385,17 +412,17 @@ func _compute_moon_coordinates() -> void:
 	var ze: float = yg * obleclSin + zg * obleclCos
 	
 	# Right ascension.
-	var RA: float = RAD_2_DEG * atan2(ye, xe)
+	var RA: float = SkyMath.RAD_2_DEG * atan2(ye, xe)
 	RA = SkyMath.rev(RA)
 	
 	# Declination.
-	var decl: float = RAD_2_DEG * atan2(ze, sqrt(xe * xe + ye * ye))
-	var declRad: float = DEG_2_RAD * decl
+	var decl: float = SkyMath.RAD_2_DEG * atan2(ze, sqrt(xe * xe + ye * ye))
+	var declRad: float = SkyMath.DEG_2_RAD * decl
 
 	# Hour angle.
 	var HA: float = ((_sideral_time * 15) - RA)
 	HA = SkyMath.rev(HA)
-	var HARad: float = DEG_2_RAD * HA
+	var HARad: float = SkyMath.DEG_2_RAD * HA
 	
 	# HA y Decl in rectangular coordinates.
 	var declCos: float = cos(declRad)
@@ -412,7 +439,7 @@ func _compute_moon_coordinates() -> void:
 	var zhor: float = xr * cosLat + zr * sinLat
 	
 	_moon_coords.x = atan2(yhor, xhor) + PI 
-	_moon_coords.y = (PI * 0.5) - atan2(zhor, sqrt(xhor * xhor + yhor * yhor))
+	_moon_coords.y = (PI * 0.5) - atan2(zhor, sqrt(xhor * xhor + yhor * yhor)) # asin(zhor) 
 
 func _get_property_list() -> Array:
 	var ret: Array 
