@@ -79,7 +79,7 @@ const _COLOR_CORRECTION_PARAMS:= "_color_correction_params"
 #-------------------
 # Properties
 #-------------------
-# Global.
+# Global
 var _init_properties_ok: bool = false
 
 var sky_visible:= true setget set_sky_visible
@@ -135,8 +135,8 @@ func set_sky_render_priority(value: int) -> void:
 	sky_render_priority = value
 	_skypass_material.render_priority = value
 
-# Near Space.
-# Sun Coords..
+# Near Space
+# Sun Coords.
 var sun_azimuth: float = 0.0 setget set_sun_azimuth
 func set_sun_azimuth(value: float) -> void:
 	sun_azimuth = value
@@ -174,7 +174,6 @@ var sun_disk_multiplier: float = 2.0 setget set_sun_disk_multiplier
 func set_sun_disk_multiplier(value: float) -> void:
 	sun_disk_multiplier = value 
 	set_sun_disk_color(sun_disk_color)
-
 
 # Sun Light.
 var _sun_light_enable: bool = false
@@ -216,7 +215,6 @@ func set_moon_altitude(value: float) -> void:
 	moon_altitude = value
 	_set_moon_coords(moon_azimuth, value)
 
-
 var _finish_set_moon_position := false
 var _moon_transform := Transform()
 func get_moon_transform() -> Transform:
@@ -249,7 +247,6 @@ var moon_texture: Texture = null setget set_moon_texture
 func set_moon_texture(value: Texture) -> void:
 	moon_texture = value
 	_moonpass_material.set_shader_param("_texture", value)
-	
 
 var moon_texture_size: int = 2 setget set_moon_texture_size
 func set_moon_texture_size(value: int) -> void:
@@ -292,12 +289,16 @@ func set_moon_light_energy(value: float) -> void:
 	moon_light_energy = value
 	_set_moon_light_intensity()
 
-
 # Day State.
 signal is_day(value)
 
 #====================- Deep Space -====================#
 var _deep_space_basis := Basis()
+
+var deep_space_follow_sun: bool = true setget set_deep_space_follow_sun
+func set_deep_space_follow_sun(value:bool) -> void:
+	deep_space_follow_sun = true
+	_set_sun_coords(sun_azimuth, sun_altitude)
 
 var deep_space_euler:= Vector3(-95.0, 10.0, 0.0) setget set_deep_space_euler
 func set_deep_space_euler(value: Vector3) -> void:
@@ -361,8 +362,7 @@ func set_stars_scintillation_speed(value: float) -> void:
 	stars_scintillation_speed = value 
 	_skypass_material.set_shader_param("_stars_scintillation_speed", value)
 
-
-#Atmospheric Scattering
+# Atmospheric Scattering
 var atm_wavelenghts:= Vector3(680.0, 550.0, 440.0) setget set_atm_wavelenghts
 func set_atm_wavelenghts(value: Vector3) -> void:
 	atm_wavelenghts = value
@@ -434,7 +434,6 @@ func set_atm_mie_zenith_length(value: float) -> void:
 	_skypass_material.set_shader_param(param, value)
 	_fogpass_material.set_shader_param(param, value)
 
-
 var atm_mie: float = 0.07 setget set_atm_mie
 func set_atm_mie(value: float) -> void:
 	atm_mie = value
@@ -489,7 +488,6 @@ func set_atm_moon_mie_anisotropy(value: float) -> void:
 	_skypass_material.set_shader_param(param, partialMiePhase)
 	_fogpass_material.set_shader_param(param, partialMiePhase)
 
-
 # Fog.
 var fog_visible:= true setget set_fog_visible
 func set_fog_visible(value: bool) -> void:
@@ -526,7 +524,7 @@ func set_fog_render_priority(value: int) -> void:
 	_fogpass_material.render_priority = value
 
 # Clouds.
-var clouds_thickness: float = 0.03 setget set_clouds_thickness
+var clouds_thickness: float = 0.024 setget set_clouds_thickness
 func set_clouds_thickness(value: float) -> void:
 	clouds_thickness = value
 	_skypass_material.set_shader_param("_clouds_thickness", value)
@@ -590,6 +588,7 @@ func set_clouds_texture(value: Texture) -> void:
 	clouds_texture = value
 	_skypass_material.set_shader_param("_clouds_texture", value)
 
+
 func _init():
 	_init_resources()
 	_sky_node = get_node_or_null(_SKY_INSTANCE_NAME)
@@ -600,16 +599,10 @@ func _init():
 		_init_mesh_instances()
 	_skypass_material.set_shader_param("_noise_tex", _DEFAULT_STARS_FIELD_NOISE_TEXTURE)
 
-func _notification(what: int) -> void:
-	pass
-
 func _enter_tree() -> void:
 	_build_dome()
 	_init_properties()
 	_set_nodes_owner() # Debug.
-
-func _exit_tree() -> void:
-	pass
 
 func _ready():
 	#var all_child_nodes = get_children()
@@ -618,7 +611,6 @@ func _ready():
 	_set_moon_coords(moon_azimuth, moon_altitude)
 
 func _init_properties() -> void:
-
 	_init_properties_ok = true
 	set_sky_visible(sky_visible)
 	set_skydome_radius(skydome_radius)
@@ -794,6 +786,8 @@ func _set_sun_coords(azimuth: float, altitude: float) -> void:
 			_sun_light_node.transform.origin = _sun_transform.origin
 			_sun_light_node.transform.basis = _sun_transform.basis
 	_sun_light_altitude_mult = SkyMath.saturate(sun_direction.y + 0.25)
+	
+	set_deep_space_quat(_sun_transform.basis.get_rotation_quat().inverse())
 		
 	_set_sun_light_color(sun_light_color, sun_horizon_light_color)
 	_set_sun_light_intensity()
@@ -843,7 +837,7 @@ func _set_day_state(value: float, threshold: float = 1.80) -> void:
 		emit_signal("is_day", false)
 	else:
 		emit_signal("is_day", true)
-	
+		
 	_evaluate_light_enable()
 
 func _evaluate_light_enable() -> void:
@@ -871,7 +865,6 @@ func _set_moon_light_intensity() -> void:
 
 func _set_deep_space_matrix() -> void:
 	_skypass_material.set_shader_param("_deep_space_matrix", _deep_space_basis)
-
 
 func _set_beta_ray() -> void:
 	var wl_la: Vector3 = AtmScatter.get_wavelenght_lambda(atm_wavelenghts)
@@ -901,7 +894,6 @@ func _set_night_intensity() -> void:
 	_skypass_material.set_shader_param("_atm_night_tint", atm_night_tint * intensity)
 	_fogpass_material.set_shader_param("_atm_night_tint", atm_night_tint * intensity)
 	set_atm_moon_mie_intensity(atm_moon_mie_intensity)
-
 
 func _get_property_list() -> Array:
 	var ret: Array
@@ -947,6 +939,7 @@ func _get_property_list() -> Array:
 	
 	# Deep Space.
 	ret.push_back({name = "DeepSpace", type=TYPE_NIL, usage=PROPERTY_USAGE_GROUP})
+	ret.push_back({name = "deep_space_follow_sun", type=TYPE_BOOL})
 	ret.push_back({name = "deep_space_euler", type=TYPE_VECTOR3})
 	ret.push_back({name = "background_color", type=TYPE_COLOR})
 	ret.push_back({name = "enable_set_background_texture", type=TYPE_BOOL})
@@ -1009,7 +1002,3 @@ func _get_property_list() -> Array:
 		ret.push_back({name = "clouds_texture", type=TYPE_OBJECT, hint=PROPERTY_HINT_FILE, hint_string="Texture"})
 	
 	return ret;
-
-
-
-

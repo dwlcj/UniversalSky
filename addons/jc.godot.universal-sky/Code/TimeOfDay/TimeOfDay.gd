@@ -426,12 +426,12 @@ func _get_property_list() -> Array:
 	ret.push_back({name = "year", type=TYPE_INT, hint=PROPERTY_HINT_RANGE, hint_string="-9999, 9999"})
 	
 	ret.push_back({name = "Planetary And Location", type=TYPE_NIL, usage=PROPERTY_USAGE_GROUP})
+	ret.push_back({name = "compute_moon_coords", type=TYPE_BOOL})
+	
 	ret.push_back({name = "latitude", type=TYPE_REAL, hint=PROPERTY_HINT_RANGE, hint_string="-90.0, 90.0"})
 	ret.push_back({name = "longitude", type=TYPE_REAL, hint=PROPERTY_HINT_RANGE, hint_string="-180.0, 180.0"})
 	ret.push_back({name = "utc", type=TYPE_REAL, hint=PROPERTY_HINT_RANGE, hint_string="-12.0, 12.0"})
 	ret.push_back({name = "celestials_update_time", type=TYPE_REAL})
-	ret.push_back({name = "compute_moon_coords", type=TYPE_BOOL})
-	
 	ret.push_back({name = "Target", type=TYPE_NIL, usage=PROPERTY_USAGE_GROUP})
 	ret.push_back({name = "sky_node_path", type=TYPE_NODE_PATH})
 	

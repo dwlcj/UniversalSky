@@ -27,18 +27,18 @@ render_priority = -128
 shader = ExtResource( 3 )
 shader_param/_sun_disk_color = Color( 1.99219, 1.08267, 0.280152, 1 )
 shader_param/_sun_disk_size = 0.015
-shader_param/_sun_direction = Vector3( 0.211048, 0.958009, 0.194107 )
+shader_param/_sun_direction = Vector3( 0.540471, 0.833066, -0.117863 )
 shader_param/_moon_color = Color( 1, 1, 1, 0.3 )
 shader_param/_moon_size = 0.07
-shader_param/_moon_direction = Vector3( 0.165387, -0.984836, 0.0523907 )
-shader_param/_moon_matrix = Basis( 0, -0.986229, 0.165387, 0.0531223, -0.165154, -0.984836, 0.998588, 0.00878575, 0.0523907 )
+shader_param/_moon_direction = Vector3( 0.145407, -0.988348, 0.0450057 )
+shader_param/_moon_matrix = Basis( 0, -0.989372, 0.145407, 0.0454892, -0.145256, -0.988348, 0.998965, 0.00661444, 0.0450057 )
 shader_param/_color_correction_params = Vector3( 0, 0, 1.3 )
 shader_param/_ground_color = Color( 0.3, 0.3, 0.3, 1 )
 shader_param/_background_color = Color( 0.19, 0.19, 0.19, 0.3 )
 shader_param/_stars_field_color = Color( 1, 1, 1, 1 )
 shader_param/_stars_scintillation = 0.75
 shader_param/_stars_scintillation_speed = 0.01
-shader_param/_deep_space_matrix = Basis( -0.839072, 0.371709, -0.39723, 0, 0.730174, 0.683262, 0.544021, 0.573305, -0.612668 )
+shader_param/_deep_space_matrix = Basis( -0.213067, 0, -0.977038, -0.813937, 0.553173, 0.177499, 0.540471, 0.833066, -0.117863 )
 shader_param/_atm_darkness = 0.5
 shader_param/_atm_sun_intensity = 30.0
 shader_param/_atm_day_tint = Color( 0.741176, 0.776471, 0.847059, 1 )
@@ -49,14 +49,14 @@ shader_param/_atm_sun_mie_tint = Color( 1, 1, 1, 1 )
 shader_param/_atm_sun_mie_intensity = 0.8
 shader_param/_atm_moon_mie_tint = Color( 0.137255, 0.184314, 0.290196, 1 )
 shader_param/_atm_moon_mie_intensity = 0.0
-shader_param/_atm_beta_ray = Vector3( 4.06318e-06, 9.49404e-06, 2.31788e-05 )
+shader_param/_atm_beta_ray = Vector3( 4.57853e-06, 8.23005e-06, 1.70658e-05 )
 shader_param/_atm_beta_mie = Vector3( 3.038e-08, 3.038e-08, 3.038e-08 )
 shader_param/_atm_sun_partial_mie_phase = Vector3( 0.268975, 1.73102, 1.71 )
 shader_param/_atm_moon_partial_mie_phase = Vector3( 0.36, 1.64, 1.6 )
 shader_param/_atm_rayleigh_zenith_length = 8400.0
 shader_param/_atm_mie_zenith_length = 1250.0
-shader_param/_clouds_coverage = 0.609
-shader_param/_clouds_thickness = 0.03
+shader_param/_clouds_coverage = 0.728
+shader_param/_clouds_thickness = 0.024
 shader_param/_clouds_absorption = 11.0
 shader_param/_clouds_step = 10
 shader_param/_clouds_noise_freq = 3.0
@@ -79,8 +79,8 @@ rings = 16
 render_priority = 123
 shader = ExtResource( 4 )
 shader_param/_density = 0.00147035
-shader_param/_sun_direction = Vector3( 0.211048, 0.958009, 0.194107 )
-shader_param/_moon_direction = Vector3( 0.165387, -0.984836, 0.0523907 )
+shader_param/_sun_direction = Vector3( 0.540471, 0.833066, -0.117863 )
+shader_param/_moon_direction = Vector3( 0.145407, -0.988348, 0.0450057 )
 shader_param/_color_correction_params = Vector3( 0, 0, 1.3 )
 shader_param/_atm_darkness = 0.5
 shader_param/_atm_sun_intensity = 30.0
@@ -92,7 +92,7 @@ shader_param/_atm_sun_mie_tint = Color( 1, 1, 1, 1 )
 shader_param/_atm_sun_mie_intensity = 0.8
 shader_param/_atm_moon_mie_tint = Color( 0.137255, 0.184314, 0.290196, 1 )
 shader_param/_atm_moon_mie_intensity = 0.0
-shader_param/_atm_beta_ray = Vector3( 4.06318e-06, 9.49404e-06, 2.31788e-05 )
+shader_param/_atm_beta_ray = Vector3( 4.57853e-06, 8.23005e-06, 1.70658e-05 )
 shader_param/_atm_beta_mie = Vector3( 3.038e-08, 3.038e-08, 3.038e-08 )
 shader_param/_atm_sun_partial_mie_phase = Vector3( 0.268975, 1.73102, 1.71 )
 shader_param/_atm_moon_partial_mie_phase = Vector3( 0.36, 1.64, 1.6 )
@@ -107,16 +107,16 @@ size = Vector2( 2, 2 )
 [node name="Main" type="Spatial"]
 
 [node name="MainCam" type="Camera" parent="."]
-transform = Transform( 0.990689, -0.0308772, -0.132597, -0.00471918, 0.965569, -0.260106, 0.136063, 0.25831, 0.956432, -6.714, 3.155, 9.518 )
+transform = Transform( 0.0426777, -0.263263, -0.96378, 0, 0.964659, -0.263503, 0.999089, 0.0112457, 0.0411695, -7.13638, 2.59202, -0.614973 )
 far = 8192.0
 
 [node name="SunLight" type="DirectionalLight" parent="."]
-transform = Transform( 0.676948, -0.705124, 0.211048, 0, 0.286738, 0.958009, -0.736031, -0.648522, 0.194107, 0.211048, 0.958009, 0.194107 )
+transform = Transform( -0.213067, -0.813937, 0.540471, 0, 0.553173, 0.833066, -0.977038, 0.177499, -0.117863, 0.540471, 0.833066, -0.117863 )
 light_color = Color( 0.992157, 0.917647, 0.886275, 1 )
 shadow_enabled = true
 
 [node name="MoonLight" type="DirectionalLight" parent="."]
-transform = Transform( 0, -0.325765, -0.945451, 0.937826, -0.328171, 0.113075, -0.347105, -0.886669, 0.305511, -0.945451, 0.113075, 0.305511 )
+transform = Transform( 0, -0.277942, -0.960598, 0.364619, -0.894467, 0.258808, -0.931157, -0.350252, 0.101343, -0.960598, 0.258808, 0.101343 )
 visible = false
 light_color = Color( 0.572549, 0.776471, 0.956863, 1 )
 light_energy = 0.0
@@ -126,6 +126,7 @@ shadow_enabled = true
 environment = SubResource( 1 )
 
 [node name="Spatial" parent="." instance=ExtResource( 1 )]
+transform = Transform( -4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 0, 0, 0 )
 
 [node name="ReflectionProbe" type="ReflectionProbe" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.28389, 0 )
@@ -135,7 +136,22 @@ max_distance = 16384.0
 extents = Vector3( 2000, 2000, 2000 )
 cull_mask = 4
 interior_enable = true
-interior_ambient_color = Color( 0.152941, 0.176471, 0.27451, 1 )
+interior_ambient_color = Color( 0.172549, 0.2, 0.321569, 1 )
+
+[node name="TimeOfDay" type="Node" parent="."]
+script = ExtResource( 10 )
+system_sync = false
+total_cycle_in_minutes = 3.0
+total_hours = 3.38
+day = 27
+month = 2
+year = 2021
+compute_moon_coords = true
+latitude = 0.0
+longitude = 0.0
+utc = 0.0
+celestials_update_time = 0.0
+sky_node_path = NodePath("../SkyManager")
 
 [node name="SkyManager" type="Node" parent="."]
 script = ExtResource( 2 )
@@ -147,8 +163,8 @@ exposure = 1.3
 ground_color = Color( 0.3, 0.3, 0.3, 1 )
 sky_layers = 4
 sky_render_priority = -128
-sun_altitude = 16.6628
-sun_azimuth = 47.3944
+sun_altitude = 33.585
+sun_azimuth = 102.302
 sun_disk_color = Color( 0.996094, 0.541334, 0.140076, 1 )
 sun_disk_multiplier = 2.0
 sun_disk_size = 0.015
@@ -156,8 +172,8 @@ sun_light_path = NodePath("../SunLight")
 sun_light_color = Color( 0.992157, 0.917647, 0.886275, 1 )
 sun_horizon_light_color = Color( 0.945098, 0.631373, 0.556863, 1 )
 sun_light_energy = 1.0
-moon_altitude = 170.009
-moon_azimuth = 72.423
+moon_altitude = 171.245
+moon_azimuth = 72.8019
 moon_color = Color( 1, 1, 1, 0.3 )
 moon_size = 0.07
 moon_texture_size = 2
@@ -165,7 +181,8 @@ enable_set_moon_texture = false
 moon_light_path = NodePath("../MoonLight")
 moon_light_color = Color( 0.572549, 0.776471, 0.956863, 1 )
 moon_light_energy = 1.493
-deep_space_euler = Vector3( -95, 10, 0 )
+deep_space_follow_sun = true
+deep_space_euler = Vector3( -0.178444, -1.69085, -0.973875 )
 background_color = Color( 0.19, 0.19, 0.19, 0.3 )
 enable_set_background_texture = false
 stars_field_color = Color( 1, 1, 1, 1 )
@@ -173,7 +190,7 @@ enable_set_stars_field_texture = false
 stars_scintillation = 0.75
 stars_scintillation_speed = 0.01
 atm_darkness = 0.5
-atm_wavelenghts = Vector3( 680, 550, 440 )
+atm_wavelenghts = Vector3( 660, 570, 475 )
 atm_sun_intensity = 30.0
 atm_day_tint = Color( 0.741176, 0.776471, 0.847059, 1 )
 atm_horizon_light_tint = Color( 0.996094, 0.809569, 0.591431, 1 )
@@ -197,8 +214,8 @@ fog_rayleigh_depth = 0.04544
 fog_mie_depth = 0.0423972
 fog_layers = 524288
 fog_render_priority = 123
-clouds_thickness = 0.03
-clouds_coverage = 0.609
+clouds_thickness = 0.024
+clouds_coverage = 0.728
 clouds_absorption = 11.0
 clouds_step = 10
 clouds_noise_frequency = 3.0
@@ -228,18 +245,3 @@ material/0 = null
 
 [node name="MoonRender" parent="SkyManager" instance=ExtResource( 5 )]
 size = Vector2( 256, 256 )
-
-[node name="TimeOfDay" type="Node" parent="."]
-script = ExtResource( 10 )
-system_sync = false
-total_cycle_in_minutes = 0.05
-total_hours = 11.158
-day = 19
-month = 4
-year = 2021
-latitude = 0.0
-longitude = 0.0
-utc = 0.0
-celestials_update_time = 0.0
-compute_moon_coords = true
-sky_node_path = NodePath("../SkyManager")
