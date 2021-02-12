@@ -12,11 +12,6 @@ tool extends Node
 °               J. Cuellar 2020. MIT License.
 °                   See: LICENSE Archive.
 ========================================================"""
-
-
-"""
-10. Add TOD.
-"""
 #-------------------
 # Resources.
 #-------------------
@@ -134,6 +129,11 @@ func set_sky_layers(value: int) -> void:
 	if not _init_properties_ok: return
 	assert(_sky_node != null)
 	_sky_node.layers = value
+
+var sky_render_priority: int = -128 setget set_sky_render_priority
+func set_sky_render_priority(value: int) -> void:
+	sky_render_priority = value
+	_skypass_material.render_priority = value
 
 # Near Space.
 # Sun Coords..
@@ -520,6 +520,11 @@ func set_fog_layers(value: int) -> void:
 	assert(_fog_node != null)
 	_fog_node.layers = value
 
+var fog_render_priority: int = 123 setget set_fog_render_priority
+func set_fog_render_priority(value: int) -> void:
+	fog_render_priority = value 
+	_fogpass_material.render_priority = value
+
 # Clouds.
 var clouds_thickness: float = 0.03 setget set_clouds_thickness
 func set_clouds_thickness(value: float) -> void:
@@ -580,19 +585,10 @@ func set_clouds_enable_set_texture(value: bool) -> void:
 		
 	property_list_changed_notify()
 
-
 var clouds_texture: Texture setget set_clouds_texture
 func set_clouds_texture(value: Texture) -> void:
 	clouds_texture = value
 	_skypass_material.set_shader_param("_clouds_texture", value)
-
-
-
-
-
-
-
-
 
 func _init():
 	_init_resources()
@@ -631,6 +627,7 @@ func _init_properties() -> void:
 	set_exposure(exposure)
 	set_ground_color(ground_color)
 	set_sky_layers(sky_layers)
+	set_sky_render_priority(sky_render_priority)
 	
 	set_sun_azimuth(sun_azimuth)
 	set_sun_altitude(sun_altitude)
@@ -692,6 +689,7 @@ func _init_properties() -> void:
 	set_fog_density(fog_density)
 	set_fog_rayleigh_depth(fog_rayleigh_depth)
 	set_fog_mie_depth(fog_mie_depth)
+	set_fog_render_priority(fog_render_priority)
 	
 	set_clouds_thickness(clouds_thickness)
 	set_clouds_coverage(clouds_coverage)
@@ -712,11 +710,11 @@ func _init_resources() -> void:
 	_sky_mesh.rings = 16
 	_skypass_material.shader = _SKYPASS_SHADER
 	_skypass_material.setup_local_to_scene()
-	_skypass_material.render_priority = -125
+	_skypass_material.render_priority = sky_render_priority
 	
 	_fog_mesh.size = Vector2(2.0, 2.0);
 	_fogpass_material.shader = _SCATTER_FOG_PASS_SHADER
-	_fogpass_material.render_priority = 123;
+	_fogpass_material.render_priority = fog_render_priority;
 	
 	_moonpass_material.shader = _MOONPASS_SHADER
 	_moonpass_material.setup_local_to_scene()
@@ -918,6 +916,7 @@ func _get_property_list() -> Array:
 	ret.push_back({name = "exposure", type = TYPE_REAL})
 	ret.push_back({name = "ground_color", type = TYPE_COLOR})
 	ret.push_back({name = "sky_layers", type=TYPE_INT, hint=PROPERTY_HINT_LAYERS_3D_RENDER})
+	ret.push_back({name = "sky_render_priority", type=TYPE_INT, hint=PROPERTY_HINT_RANGE, hint_string="-128, 128"})
 	
 	# Sun. 
 	ret.push_back({name = "Sun", type=TYPE_NIL, usage=PROPERTY_USAGE_GROUP, hint_string = "sun_"})
@@ -990,6 +989,7 @@ func _get_property_list() -> Array:
 	ret.push_back({name = "fog_rayleigh_depth", type=TYPE_REAL, hint=PROPERTY_HINT_EXP_EASING, hint_string="0.0, 1.0"})
 	ret.push_back({name = "fog_mie_depth", type=TYPE_REAL, hint=PROPERTY_HINT_EXP_EASING, hint_string="0.0, 1.0"})
 	ret.push_back({name = "fog_layers", type=TYPE_INT, hint=PROPERTY_HINT_LAYERS_3D_RENDER})
+	ret.push_back({name = "fog_render_priority", type=TYPE_INT, hint=PROPERTY_HINT_RANGE, hint_string="-128, 127"})
 	
 	# Clouds.
 	ret.push_back({name = "Clouds", type=TYPE_NIL,usage=PROPERTY_USAGE_GROUP, hint_string = "clouds_"})
