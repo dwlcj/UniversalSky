@@ -7,7 +7,7 @@
 [ext_resource path="res://addons/jc.godot.universal-sky-common/Examples/Graphics/Meshes/Primitives/Meshes/KnotTorus.obj" type="ArrayMesh" id=10]
 
 [sub_resource type="SpatialMaterial" id=1]
-albedo_color = Color( 0.603922, 0.603922, 0.603922, 1 )
+albedo_color = Color( 0.388235, 0.298039, 0.25098, 1 )
 albedo_texture = ExtResource( 8 )
 uv1_scale = Vector3( 150, 150, 1 )
 
@@ -28,11 +28,11 @@ roughness = 0.14
 
 [sub_resource type="SpatialMaterial" id=7]
 flags_transparent = true
-albedo_color = Color( 1, 1, 1, 0.0588235 )
+albedo_color = Color( 1, 1, 1, 0.105882 )
 metallic = 1.0
-roughness = 0.0
+roughness = 0.1
 refraction_enabled = true
-refraction_scale = -0.23
+refraction_scale = 0.15
 refraction_texture_channel = 0
 
 [sub_resource type="SpatialMaterial" id=8]

@@ -13,6 +13,9 @@
 ========================================================"""
 class_name SkyMath
 
+const RAD_2_DEG: float = 57.2957795
+const DEG_2_RAD: float = 0.0174533
+
 static func saturate(value: float) -> float:
 	return clamp(value, 0.0, 1.0)
 
