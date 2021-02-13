@@ -854,18 +854,15 @@ func _set_beta_ray() -> void:
 	var wl_la: Vector3 = AtmScatter.get_wavelenght_lambda(atm_wavelenghts)
 	var wl = AtmScatter.get_wavelenght(wl_la)
 	var param = "_atm_beta_ray"
-	_skypass_material.set_shader_param(param, 
-		AtmScatter.beta_ray(wl) * atm_thickness)
-	_fogpass_material.set_shader_param(param, 
-		AtmScatter.beta_ray(wl) * atm_thickness)
+	var br: Vector3 = AtmScatter.beta_ray(wl) * atm_thickness
+	_skypass_material.set_shader_param(param, br)
+	_fogpass_material.set_shader_param(param, br)
 
 func _set_beta_mie() -> void:
 	var param = "_atm_beta_mie"
-	_skypass_material.set_shader_param(param, 
-		AtmScatter.beta_mie(atm_mie, atm_turbidity))
-	
-	_fogpass_material.set_shader_param(param, 
-		AtmScatter.beta_mie(atm_mie, atm_turbidity))
+	var bm: Vector3 = AtmScatter.beta_mie(atm_mie, atm_turbidity)
+	_skypass_material.set_shader_param(param, bm)
+	_fogpass_material.set_shader_param(param, bm)
 
 func _set_night_intensity() -> void:
 	var intensity: float
