@@ -420,20 +420,6 @@ func set_atm_thickness(value: float) -> void:
 	atm_thickness = value
 	_set_beta_ray()
 
-var atm_rayleigh_zenith_length: float = 8.4e3 setget set_atm_rayleigh_zenith_length
-func set_atm_rayleigh_zenith_length(value: float) -> void:
-	atm_rayleigh_zenith_length = value
-	var param = "_atm_rayleigh_zenith_length"
-	_skypass_material.set_shader_param(param, value)
-	_fogpass_material.set_shader_param(param, value)
-
-var atm_mie_zenith_length: float = 1.25e3 setget set_atm_mie_zenith_length
-func set_atm_mie_zenith_length(value: float) -> void:
-	atm_mie_zenith_length = value
-	var param = "_atm_mie_zenith_length"
-	_skypass_material.set_shader_param(param, value)
-	_fogpass_material.set_shader_param(param, value)
-
 var atm_mie: float = 0.07 setget set_atm_mie
 func set_atm_mie(value: float) -> void:
 	atm_mie = value
@@ -667,8 +653,6 @@ func _init_properties() -> void:
 	set_atm_horizon_light_tint(atm_horizon_light_tint)
 	set_atm_params(atm_params)
 	set_atm_thickness(atm_thickness)
-	set_atm_rayleigh_zenith_length(atm_rayleigh_zenith_length)
-	set_atm_mie_zenith_length(atm_mie_zenith_length)
 	set_atm_mie(atm_mie)
 	set_atm_turbidity(atm_turbidity)
 	set_atm_sun_mie_tint(atm_sun_mie_tint)
@@ -964,8 +948,6 @@ func _get_property_list() -> Array:
 	ret.push_back({name = "atm_night_tint", type=TYPE_COLOR})
 	ret.push_back({name = "atm_params", type=TYPE_VECTOR3})
 	ret.push_back({name = "atm_thickness", type=TYPE_REAL, hint=PROPERTY_HINT_RANGE, hint_string="0.0, 10.0"})
-	ret.push_back({name = "atm_rayleigh_zenith_length", type=TYPE_REAL, hint=PROPERTY_HINT_RANGE, hint_string="0.0, 8.4e3"})
-	ret.push_back({name = "atm_mie_zenith_length", type=TYPE_REAL, hint=PROPERTY_HINT_RANGE, hint_string="0.0, 1.25e3"})
 	ret.push_back({name = "atm_mie", type=TYPE_REAL})
 	ret.push_back({name = "atm_turbidity", type=TYPE_REAL})
 	ret.push_back({name = "atm_sun_mie_tint", type=TYPE_COLOR})

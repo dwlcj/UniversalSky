@@ -62,8 +62,6 @@ uniform vec3 _atm_beta_ray;
 uniform vec3 _atm_beta_mie;
 uniform vec3 _atm_sun_partial_mie_phase;
 uniform vec3 _atm_moon_partial_mie_phase;
-uniform float _atm_rayleigh_zenith_length;
-uniform float _atm_mie_zenith_length;
 
 const float kRAYLEIGH_ZENITH_LENGTH = 8.4e3;
 const float kMIE_ZENITH_LENGTH = 1.25e3;
@@ -161,8 +159,8 @@ float miePhase(float mu, vec3 partial){
 void opticalDepth(float y, out float sr, out float sm){
 	y = max(0.03, y + 0.03) + _atm_params.y;
 	y = 1.0 / (y * _atm_params.x);
-	sr = y * _atm_rayleigh_zenith_length;
-	sm = y * _atm_mie_zenith_length;
+	sr = y * kRAYLEIGH_ZENITH_LENGTH;
+	sm = y * kMIE_ZENITH_LENGTH;
 }
 
 void _opticalDepth(float y, out float sr, out float sm)
@@ -174,8 +172,8 @@ void _opticalDepth(float y, out float sr, out float sm)
 	zenith = cos(zenith) + 0.15 * pow(93.885 - ((zenith * 180.0) / kPI), -1.253);
 	zenith = 1.0 / (zenith + _atm_params.y);
 	
-	sr = zenith * _atm_rayleigh_zenith_length;
-	sm = zenith * _atm_mie_zenith_length;
+	sr = zenith * kRAYLEIGH_ZENITH_LENGTH;
+	sm = zenith * kMIE_ZENITH_LENGTH;
 }
 
 vec3 atmosphericScattering(float sr, float sm, vec2 mu, vec3 mult){
@@ -285,7 +283,7 @@ void vertex(){
 void fragment(){
 	vec3 col = vec3(0.0);
 	vec3 ray = normalize(world_pos).xyz;
-	float horizonBlend = saturate((ray.y - 0.25) * 5.0);
+	float horizonBlend = saturate((ray.y - 0.03) * 10.0);
 	
 	// Atmospheric Scattering.
 	vec2 mu = vec2(dot(_sun_direction, ray), dot(_moon_direction, ray));
