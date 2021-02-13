@@ -12,7 +12,7 @@ Dynamic sky and TOD plugin for godot engine.
 > I'm making a prototype for my game that I have planned for godot 4. 
 ------------------------------------
 
-## Reflection:
+## Reflections:
 > Optimal reflections are possible with a well-configured reflection probe. 
 ------------------------------------
 
