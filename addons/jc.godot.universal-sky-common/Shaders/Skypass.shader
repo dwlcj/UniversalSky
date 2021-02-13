@@ -242,7 +242,6 @@ float cloudsDensity(vec3 p, vec3 offset, float t){
 	return saturate(dens);
 }
 
-
 vec4 renderClouds(vec3 pos, float tm){
 	vec4 ret;
 	pos.xy = pos.xz / pos.y;
@@ -286,6 +285,7 @@ void vertex(){
 void fragment(){
 	vec3 col = vec3(0.0);
 	vec3 ray = normalize(world_pos).xyz;
+	float horizonBlend = saturate((ray.y - 0.25) * 5.0);
 	
 	// Atmospheric Scattering.
 	vec2 mu = vec2(dot(_sun_direction, ray), dot(_moon_direction, ray));
@@ -323,14 +323,14 @@ void fragment(){
 	//deepSpace.rgb -= saturate(starsField.r*10.0);
 	deepSpace.rgb += starsField.rgb * moonMask;
 	deepSpace.rgb *= angle_mult.z;
-	col.rgb += deepSpace.rgb;
+	col.rgb += deepSpace.rgb * horizonBlend;
 	
 	// Clouds.
 	vec4 clouds = renderClouds(ray, TIME);
 	clouds.a = saturate(clouds.a);
 	clouds.rgb *= mix(mix(vec3(1.0), _atm_horizon_light_tint.rgb, angle_mult.x), 
 		_atm_night_tint.rgb, angle_mult.w);
-	clouds.a = mix(clouds.a, 0.0, saturate((-ray.y + 0.25) * 5.0));
+	clouds.a = mix(0.0, clouds.a, horizonBlend);
 	col.rgb = mix(col.rgb, clouds.rgb + mix(vec3(0.0), scatter, _clouds_sky_tint_fade), clouds.a);
 	
 	
