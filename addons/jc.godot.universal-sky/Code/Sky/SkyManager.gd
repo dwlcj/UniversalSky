@@ -575,6 +575,15 @@ func set_clouds_texture(value: Texture) -> void:
 	_skypass_material.set_shader_param("_clouds_texture", value)
 
 
+# Environment.
+var _enable_enviro: bool = false
+var enviro: Environment setget set_enviro
+func set_enviro(value: Environment) -> void:
+	enviro = value 
+	_enable_enviro = true if enviro != null else false
+	if _enable_enviro && _init_properties_ok:
+		_update_enviro()
+
 func _init():
 	_init_resources()
 	_sky_node = get_node_or_null(_SKY_INSTANCE_NAME)
@@ -680,6 +689,8 @@ func _init_properties() -> void:
 	set_clouds_enable_set_texture(clouds_enable_set_texture)
 	if clouds_enable_set_texture:
 		set_clouds_texture(clouds_texture)
+	
+	set_enviro(enviro)
 
 func _init_resources() -> void:
 	_sky_mesh.radial_segments = 32
@@ -777,6 +788,7 @@ func _set_sun_coords(azimuth: float, altitude: float) -> void:
 	_set_sun_light_intensity()
 	_set_moon_light_intensity()
 	_set_night_intensity() 
+	_update_enviro()
 
 func _set_moon_coords(azimuth: float, altitude: float) -> void:
 	if not _init_properties_ok: return
@@ -811,6 +823,7 @@ func _set_moon_coords(azimuth: float, altitude: float) -> void:
 	set_moon_light_color(moon_light_color)
 	_set_moon_light_intensity()
 	_set_night_intensity()
+	_update_enviro()
 
 func _set_moon_viewport_texture() -> void:
 	_moon_viewport_texture = _moon_instance.get_texture()
@@ -864,17 +877,28 @@ func _set_beta_mie() -> void:
 	_skypass_material.set_shader_param(param, bm)
 	_fogpass_material.set_shader_param(param, bm)
 
+var n_intensity: float
 func _set_night_intensity() -> void:
-	var intensity: float
 	if atm_night_scatter_mode == 0:
-		intensity = SkyMath.saturate(-sun_direction.y + 0.30)
-		atm_moon_phases_mult = intensity
+		n_intensity = SkyMath.saturate(-sun_direction.y + 0.30)
+		atm_moon_phases_mult = n_intensity
 	else:
 		atm_moon_phases_mult = SkyMath.saturate(-sun_direction.dot(moon_direction)+0.60) 
-		intensity = SkyMath.saturate(moon_direction.y) * atm_moon_phases_mult
-	_skypass_material.set_shader_param("_atm_night_tint", atm_night_tint * intensity)
-	_fogpass_material.set_shader_param("_atm_night_tint", atm_night_tint * intensity)
+		n_intensity = SkyMath.saturate(moon_direction.y) * atm_moon_phases_mult
+	_skypass_material.set_shader_param("_atm_night_tint", atm_night_tint * n_intensity)
+	_fogpass_material.set_shader_param("_atm_night_tint", atm_night_tint * n_intensity)
 	set_atm_moon_mie_intensity(atm_moon_mie_intensity)
+
+func _update_enviro() -> void:
+	if not _enable_enviro: return 
+	var ax:= SkyMath.saturate(1.0 - sun_direction.y)
+	var aw:= SkyMath.saturate(-sun_direction.y + 0.60)
+	var colA: Color = lerp(atm_day_tint * 0.5, atm_horizon_light_tint, ax)
+	var colB: Color = lerp(colA, atm_night_tint * n_intensity, aw)
+	enviro.ambient_light_color = colB
+	
+	pass
+
 
 func _get_property_list() -> Array:
 	var ret: Array
@@ -979,5 +1003,8 @@ func _get_property_list() -> Array:
 	
 	if clouds_enable_set_texture:
 		ret.push_back({name = "clouds_texture", type=TYPE_OBJECT, hint=PROPERTY_HINT_FILE, hint_string="Texture"})
+	
+	ret.push_back({name = "Environment", type=TYPE_NIL,usage=PROPERTY_USAGE_GROUP})
+	ret.push_back({name = "enviro", type=TYPE_OBJECT, hint=PROPERTY_HINT_RESOURCE_TYPE, hint_string="Environment"})
 	
 	return ret;
