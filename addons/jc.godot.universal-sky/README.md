@@ -1,4 +1,4 @@
-# Skydot Plugin 
+# Universal Sky.
 
 > GDScript version.
 
